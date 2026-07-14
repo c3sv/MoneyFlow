@@ -220,3 +220,13 @@ For V1:
 - Deleting a monthly plan deletes its category limits.
 - Deleting a savings goal does not affect transactions.
 - Deleting a financial insight does not affect financial records.
+
+## Future Improvements
+
+Future versions may include:
+
+- Soft delete (`IsActive`) for categories.
+- Multiple accounts (cash, bank, Yape, credit card).
+- Budgets.
+- Notifications.
+- AI-generated financial recommendations.
