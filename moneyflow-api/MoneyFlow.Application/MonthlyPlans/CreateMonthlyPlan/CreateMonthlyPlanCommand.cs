@@ -7,5 +7,4 @@ public sealed record CreateMonthlyPlanCommand(
     decimal ExpectedIncome,
     decimal TargetSavings,
     decimal TotalSpendingLimit,
-    string Currency,
-    DateTimeOffset CreatedAt);
+    string Currency);

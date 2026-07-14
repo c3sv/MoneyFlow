@@ -1,7 +1,7 @@
 ﻿using MoneyFlow.Application.Abstractions.Persistence;
 using MoneyFlow.Application.Common.Exceptions;
 using MoneyFlow.Domain.MonthlyPlans;
-
+using MoneyFlow.Application.Abstractions.Services;
 namespace MoneyFlow.Application.MonthlyPlans.CreateMonthlyPlan;
 
 public sealed class CreateMonthlyPlanHandler
@@ -9,15 +9,18 @@ public sealed class CreateMonthlyPlanHandler
     private readonly IUserRepository _userRepository;
     private readonly IMonthlyPlanRepository _monthlyPlanRepository;
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly IDateTimeProvider _dateTimeProvider;
+    
     public CreateMonthlyPlanHandler(
         IUserRepository userRepository,
         IMonthlyPlanRepository monthlyPlanRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IDateTimeProvider dateTimeProvider)
     {
         _userRepository = userRepository;
         _monthlyPlanRepository = monthlyPlanRepository;
         _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<long> HandleAsync(
@@ -42,7 +45,7 @@ public sealed class CreateMonthlyPlanHandler
             command.TargetSavings,
             command.TotalSpendingLimit,
             command.Currency,
-            command.CreatedAt);
+            _dateTimeProvider.UtcNow);
 
         var planAlreadyExists =
             await _monthlyPlanRepository.ExistsForMonthAsync(
