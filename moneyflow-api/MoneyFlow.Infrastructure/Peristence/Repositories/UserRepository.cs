@@ -1,0 +1,44 @@
+﻿using Microsoft.EntityFrameworkCore;
+using MoneyFlow.Application.Abstractions.Persistence;
+using MoneyFlow.Domain.Users;
+
+namespace MoneyFlow.Infrastructure.Persistence.Repositories;
+
+public sealed class UserRepository : IUserRepository
+{
+    private readonly MoneyFlowDbContext _dbContext;
+
+    public UserRepository(MoneyFlowDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public Task<bool> ExistsByIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Users.AnyAsync(
+            user => user.Id == userId,
+            cancellationToken);
+    }
+
+    public Task<User?> GetByEmailAsync(
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                user => user.Email == email,
+                cancellationToken);
+    }
+
+    public async Task AddAsync(
+        User user,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.Users.AddAsync(
+            user,
+            cancellationToken);
+    }
+}
