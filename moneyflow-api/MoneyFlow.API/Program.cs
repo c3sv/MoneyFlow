@@ -5,12 +5,27 @@ using MoneyFlow.Application;
 using MoneyFlow.Infrastructure;
 using MoneyFlow.Infrastructure.Authentication;
 using MoneyFlow.API.Common.Errors;
+using MoneyFlow.API.OpenApi;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<
+        BearerSecuritySchemeTransformer>();
+
+    options.AddOperationTransformer<
+        AuthOperationTransformer>();
+});
 
 builder.Services.AddApplication();
 
@@ -30,6 +45,8 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;
+
         options.TokenValidationParameters =
             new TokenValidationParameters
             {
@@ -41,8 +58,7 @@ builder.Services
 
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(
-                        jwtSettings.SecretKey)),
+                    Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 
                 ValidateLifetime = true,
 
@@ -57,6 +73,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "MoneyFlow API v1");
+    });
 }
 
 app.UseHttpsRedirection();
