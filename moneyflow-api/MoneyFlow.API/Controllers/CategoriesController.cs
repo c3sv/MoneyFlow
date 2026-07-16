@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoneyFlow.API.Common.Authentication;
 using MoneyFlow.API.Contracts.Categories;
 using MoneyFlow.Application.Categories.CreateCategory;
+using MoneyFlow.Application.Categories.GetCategories;
 
 namespace MoneyFlow.API.Controllers;
 
@@ -12,11 +13,41 @@ namespace MoneyFlow.API.Controllers;
 public sealed class CategoriesController : ControllerBase
 {
     private readonly CreateCategoryHandler _createCategoryHandler;
+    private readonly GetCategoriesHandler _getCategoriesHandler;
 
     public CategoriesController(
-        CreateCategoryHandler createCategoryHandler)
+        CreateCategoryHandler createCategoryHandler,
+        GetCategoriesHandler getCategoriesHandler)
     {
         _createCategoryHandler = createCategoryHandler;
+        _getCategoriesHandler = getCategoriesHandler;
+    }
+
+    [HttpGet]
+    [ProducesResponseType(
+        typeof(IReadOnlyList<CategoryResponse>),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<CategoryResponse>>> GetAll(
+        CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var query = new GetCategoriesQuery(userId);
+
+        var results = await _getCategoriesHandler.HandleAsync(
+            query,
+            cancellationToken);
+
+        var response = results
+            .Select(category => new CategoryResponse(
+                category.Id,
+                category.Name,
+                category.Type,
+                category.Icon))
+            .ToList();
+
+        return Ok(response);
     }
 
     [HttpPost]
@@ -26,8 +57,7 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(
-        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status409Conflict)]

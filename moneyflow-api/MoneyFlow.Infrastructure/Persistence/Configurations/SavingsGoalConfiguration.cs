@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MoneyFlow.Domain.SavingsGoals;
 using MoneyFlow.Domain.Users;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MoneyFlow.Infrastructure.Persistence.Configurations;
 
@@ -10,6 +11,15 @@ public sealed class SavingsGoalConfiguration
 {
     public void Configure(EntityTypeBuilder<SavingsGoal> builder)
     {
+        var nullableDateOnlyConverter =
+            new ValueConverter<DateOnly?, DateTime?>(
+                date => date.HasValue
+                    ? date.Value.ToDateTime(TimeOnly.MinValue)
+                    : null,
+                dateTime => dateTime.HasValue
+                    ? DateOnly.FromDateTime(dateTime.Value)
+                    : null);
+        
         builder.ToTable("SavingsGoals");
 
         builder.HasKey(goal => goal.Id);
@@ -31,7 +41,7 @@ public sealed class SavingsGoalConfiguration
 
         builder.Property(goal => goal.Deadline)
             .HasColumnType("date");
-
+        
         builder.HasIndex(goal => goal.UserId);
 
         builder.HasOne<User>()

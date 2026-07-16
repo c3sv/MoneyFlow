@@ -18,7 +18,7 @@ public sealed class Transaction
 
     public string? Description { get; private set; }
 
-    public DateOnly Date { get; private set; }
+    public DateTime Date { get; private set; }
 
     public TransactionType Type { get; private set; }
 
@@ -54,7 +54,7 @@ public sealed class Transaction
         CategoryId = categoryId;
         Amount = amount;
         Description = NormalizeDescription(description);
-        Date = date;
+        Date = date.ToDateTime(TimeOnly.MinValue);
         Type = type;
     }
 

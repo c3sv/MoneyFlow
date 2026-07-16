@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MoneyFlow.Domain.Categories;
 using MoneyFlow.Domain.Transactions;
 using MoneyFlow.Domain.Users;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MoneyFlow.Infrastructure.Persistence.Configurations;
 
@@ -11,6 +12,10 @@ public sealed class TransactionConfiguration
 {
     public void Configure(EntityTypeBuilder<Transaction> builder)
     {
+        var dateOnlyConverter = new ValueConverter<DateOnly, DateTime>(
+            date => date.ToDateTime(TimeOnly.MinValue),
+            dateTime => DateOnly.FromDateTime(dateTime));
+        
         builder.ToTable("Transactions");
 
         builder.HasKey(transaction => transaction.Id);
@@ -24,7 +29,7 @@ public sealed class TransactionConfiguration
 
         builder.Property(transaction => transaction.Description)
             .HasMaxLength(500);
-
+        
         builder.Property(transaction => transaction.Date)
             .HasColumnType("date")
             .IsRequired();

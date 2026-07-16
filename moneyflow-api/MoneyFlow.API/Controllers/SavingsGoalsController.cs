@@ -4,6 +4,7 @@ using MoneyFlow.API.Common.Authentication;
 using MoneyFlow.API.Contracts.SavingsGoals;
 using MoneyFlow.Application.SavingsGoals.AddSavingsGoalProgress;
 using MoneyFlow.Application.SavingsGoals.CreateSavingsGoal;
+using MoneyFlow.Application.SavingsGoals.GetSavingsGoals;
 
 namespace MoneyFlow.API.Controllers;
 
@@ -18,13 +19,16 @@ public sealed class SavingsGoalsController : ControllerBase
     private readonly AddSavingsGoalProgressHandler
         _addSavingsGoalProgressHandler;
 
+    private readonly GetSavingsGoalsHandler _getSavingsGoalsHandler;
     public SavingsGoalsController(
         CreateSavingsGoalHandler createSavingsGoalHandler,
-        AddSavingsGoalProgressHandler addSavingsGoalProgressHandler)
+        AddSavingsGoalProgressHandler addSavingsGoalProgressHandler,
+        GetSavingsGoalsHandler getSavingsGoalsHandler)
     {
         _createSavingsGoalHandler = createSavingsGoalHandler;
         _addSavingsGoalProgressHandler =
             addSavingsGoalProgressHandler;
+        _getSavingsGoalsHandler = getSavingsGoalsHandler;
     }
 
     [HttpPost]
@@ -91,5 +95,32 @@ public sealed class SavingsGoalsController : ControllerBase
             cancellationToken);
 
         return NoContent();
+    }
+    [HttpGet]
+    [ProducesResponseType(
+        typeof(IReadOnlyList<SavingsGoalResponse>),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<SavingsGoalResponse>>> GetAll(
+        CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var query = new GetSavingsGoalsQuery(userId);
+
+        var results = await _getSavingsGoalsHandler.HandleAsync(
+            query,
+            cancellationToken);
+
+        var response = results
+            .Select(goal => new SavingsGoalResponse(
+                goal.Id,
+                goal.Title,
+                goal.TargetAmount,
+                goal.CurrentAmount,
+                goal.Deadline))
+            .ToList();
+
+        return Ok(response);
     }
 }

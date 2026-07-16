@@ -7,6 +7,10 @@ using MoneyFlow.Application.MonthlyPlans.CreateMonthlyPlan;
 using MoneyFlow.Application.SavingsGoals.AddSavingsGoalProgress;
 using MoneyFlow.Application.SavingsGoals.CreateSavingsGoal;
 using MoneyFlow.Application.Transactions.CreateTransaction;
+using MoneyFlow.Application.Categories.GetCategories;
+using MoneyFlow.Application.Transactions.GetTransactions;
+using MoneyFlow.Application.SavingsGoals.GetSavingsGoals;
+using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlans;
 
 namespace MoneyFlow.Application;
 
@@ -26,7 +30,12 @@ public static class DependencyInjection
 
         services.AddScoped<CreateMonthlyPlanHandler>();
         services.AddScoped<AddCategoryLimitHandler>();
-
+        
+        services.AddScoped<GetCategoriesHandler>();
+        services.AddScoped<GetTransactionsHandler>();
+        services.AddScoped<GetSavingsGoalsHandler>();
+        services.AddScoped<GetMonthlyPlansHandler>();
+        
         return services;
     }
 }

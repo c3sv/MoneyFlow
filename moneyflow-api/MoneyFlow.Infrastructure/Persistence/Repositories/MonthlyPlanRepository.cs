@@ -46,4 +46,17 @@ public sealed class MonthlyPlanRepository : IMonthlyPlanRepository
             monthlyPlan,
             cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<MonthlyPlan>> GetByUserIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.MonthlyPlans
+            .AsNoTracking()
+            .Include(plan => plan.CategoryLimits)
+            .Where(plan => plan.UserId == userId)
+            .OrderByDescending(plan => plan.Year)
+            .ThenByDescending(plan => plan.Month)
+            .ToListAsync(cancellationToken);
+    }
 }

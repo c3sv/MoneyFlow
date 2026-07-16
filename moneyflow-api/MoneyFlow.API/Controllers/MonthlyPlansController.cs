@@ -4,6 +4,7 @@ using MoneyFlow.API.Common.Authentication;
 using MoneyFlow.API.Contracts.MonthlyPlans;
 using MoneyFlow.Application.MonthlyPlans.AddCategoryLimit;
 using MoneyFlow.Application.MonthlyPlans.CreateMonthlyPlan;
+using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlans;
 
 namespace MoneyFlow.API.Controllers;
 
@@ -18,12 +19,15 @@ public sealed class MonthlyPlansController : ControllerBase
     private readonly AddCategoryLimitHandler
         _addCategoryLimitHandler;
 
+    private readonly GetMonthlyPlansHandler _getMonthlyPlansHandler;
     public MonthlyPlansController(
         CreateMonthlyPlanHandler createMonthlyPlanHandler,
-        AddCategoryLimitHandler addCategoryLimitHandler)
+        AddCategoryLimitHandler addCategoryLimitHandler,
+        GetMonthlyPlansHandler getMonthlyPlansHandler)
     {
         _createMonthlyPlanHandler = createMonthlyPlanHandler;
         _addCategoryLimitHandler = addCategoryLimitHandler;
+        _getMonthlyPlansHandler = getMonthlyPlansHandler;
     }
 
     [HttpPost]
@@ -97,5 +101,42 @@ public sealed class MonthlyPlansController : ControllerBase
             cancellationToken);
 
         return NoContent();
+    }
+    
+    [HttpGet]
+    [ProducesResponseType(
+        typeof(IReadOnlyList<MonthlyPlanResponse>),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<MonthlyPlanResponse>>> GetAll(
+        CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var query = new GetMonthlyPlansQuery(userId);
+
+        var results = await _getMonthlyPlansHandler.HandleAsync(
+            query,
+            cancellationToken);
+
+        var response = results
+            .Select(plan => new MonthlyPlanResponse(
+                plan.Id,
+                plan.Month,
+                plan.Year,
+                plan.ExpectedIncome,
+                plan.TargetSavings,
+                plan.TotalSpendingLimit,
+                plan.Currency,
+                plan.CreatedAt,
+                plan.CategoryLimits
+                    .Select(limit => new CategoryLimitResponse(
+                        limit.Id,
+                        limit.CategoryId,
+                        limit.LimitAmount))
+                    .ToList()))
+            .ToList();
+
+        return Ok(response);
     }
 }
