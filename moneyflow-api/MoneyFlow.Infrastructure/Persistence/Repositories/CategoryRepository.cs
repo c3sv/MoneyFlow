@@ -46,4 +46,16 @@ public sealed class CategoryRepository : ICategoryRepository
             category,
             cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<Category>> GetByUserIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Categories
+            .AsNoTracking()
+            .Where(category => category.UserId == userId)
+            .OrderBy(category => category.Type)
+            .ThenBy(category => category.Name)
+            .ToListAsync(cancellationToken);
+    }
 }

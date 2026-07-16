@@ -18,4 +18,8 @@ public interface ICategoryRepository
     Task AddAsync(
         Category category,
         CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<Category>> GetByUserIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default);
 }

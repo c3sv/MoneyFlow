@@ -4,6 +4,10 @@ namespace MoneyFlow.Application.Abstractions.Persistence;
 
 public interface ISavingsGoalRepository
 {
+    Task<IReadOnlyList<SavingsGoal>> GetByUserIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default);
+
     Task<SavingsGoal?> GetByIdAsync(
         long savingsGoalId,
         CancellationToken cancellationToken = default);

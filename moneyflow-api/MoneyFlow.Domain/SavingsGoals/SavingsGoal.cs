@@ -18,7 +18,7 @@ public sealed class SavingsGoal
 
     public decimal CurrentAmount { get; private set; }
 
-    public DateOnly? Deadline { get; private set; }
+    public DateTime? Deadline { get; private set; }
 
     public SavingsGoal(
         long userId,
@@ -46,8 +46,7 @@ public sealed class SavingsGoal
         Title = title.Trim();
         TargetAmount = targetAmount;
         CurrentAmount = 0;
-        Deadline = deadline;
-    }
+        Deadline  = deadline?.ToDateTime(TimeOnly.MinValue);    }
 
     public void AddProgress(decimal amount)
     {

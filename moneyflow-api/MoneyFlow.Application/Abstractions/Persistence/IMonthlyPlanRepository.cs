@@ -17,4 +17,8 @@ public interface IMonthlyPlanRepository
     Task AddAsync(
         MonthlyPlan monthlyPlan,
         CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<MonthlyPlan>> GetByUserIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default);
 }

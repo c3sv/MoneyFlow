@@ -31,4 +31,16 @@ public sealed class SavingsGoalRepository : ISavingsGoalRepository
             savingsGoal,
             cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<SavingsGoal>> GetByUserIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.SavingsGoals
+            .AsNoTracking()
+            .Where(goal => goal.UserId == userId)
+            .OrderBy(goal => goal.Deadline)
+            .ThenBy(goal => goal.Title)
+            .ToListAsync(cancellationToken);
+    }
 }
