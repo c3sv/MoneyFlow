@@ -12,12 +12,13 @@ import { AuthResponse, LoginRequest, RegisterRequest } from './auth.models';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly authStorage = inject(AuthStorageService);
+
   private readonly authUrl = `${environment.apiUrl}/api/v1/auth`;
 
-  login(request: LoginRequest): Observable<AuthResponse> {
+  login(request: LoginRequest, rememberMe: boolean): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.authUrl}/login`, request)
-      .pipe(tap((response) => this.authStorage.saveSession(response)));
+      .pipe(tap((response) => this.authStorage.saveSession(response, rememberMe)));
   }
 
   register(request: RegisterRequest): Observable<AuthResponse> {
