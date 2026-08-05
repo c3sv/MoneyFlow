@@ -1,4 +1,5 @@
 <main class="auth-page">
+  <div class="animated-bg-shape" aria-hidden="true"></div>
   <section class="auth-card">
     <aside class="auth-visual">
       <div class="brand">
@@ -200,6 +201,17 @@
             administrando tus finanzas.
           </p>
         </header>
+
+        @if (sessionExpired() && !errorMessage()) {
+          <div class="alert alert--info" role="status" aria-live="polite">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+              <path d="M12 8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <circle cx="12" cy="16" r="1" fill="currentColor" />
+            </svg>
+            <span>Tu sesión expiró. Vuelve a iniciar sesión para continuar.</span>
+          </div>
+        }
 
         @if (errorMessage()) {
           <div

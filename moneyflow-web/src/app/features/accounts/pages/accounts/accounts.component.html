@@ -1,0 +1,80 @@
+<div *ngIf="loading">Cargando cuentas...</div>
+<div *ngIf="!loading" class="accounts">
+    <div class="accounts">
+      <header class="accounts__header">
+        <div>
+          <h1 class="page-title">Tus cuentas</h1>
+          <p class="page-subtitle">{{ accounts.length }} cuentas conectadas</p>
+        </div>
+        <button class="btn btn--primary" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Agregar cuenta
+        </button>
+      </header>
+
+      <!-- Resumen de patrimonio -->
+      <div class="net-worth-strip">
+        <div class="net-worth-strip__item">
+          <span class="net-worth-strip__label">Patrimonio neto</span>
+          <span class="net-worth-strip__value figures">{{ formatCurrency(netWorth) }}</span>
+        </div>
+        <div class="net-worth-strip__divider" aria-hidden="true"></div>
+        <div class="net-worth-strip__item">
+          <span class="net-worth-strip__label">Activos</span>
+          <span class="net-worth-strip__value figures net-worth-strip__value--positive">{{ formatCurrency(totalAssets) }}</span>
+        </div>
+        <div class="net-worth-strip__divider" aria-hidden="true"></div>
+        <div class="net-worth-strip__item">
+          <span class="net-worth-strip__label">Deudas</span>
+          <span class="net-worth-strip__value figures net-worth-strip__value--negative">{{ formatCurrency(totalDebt) }}</span>
+        </div>
+      </div>
+
+      <!-- Tarjetas de cuentas -->
+      <div class="account-grid">
+        <article class="account-card" *ngFor="let acc of accounts" [attr.data-type]="acc.type">
+          <div class="account-card__top">
+            <span class="account-card__bank-badge">{{ acc.bank }}</span>
+            <span class="account-card__type">{{ typeLabel(acc.type) }}</span>
+          </div>
+
+          <div class="account-card__body">
+            <span class="account-card__nickname">{{ acc.nickname }}</span>
+            <span class="account-card__number">•••• {{ acc.last4 }}</span>
+            <span class="account-card__balance figures" [class.account-card__balance--negative]="acc.balance < 0">
+          {{ formatCurrency(acc.balance, acc.currency) }}
+        </span>
+          </div>
+
+          <div class="account-card__footer">
+        <span class="account-card__synced">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          Sincronizado {{ acc.lastSynced }}
+        </span>
+            <button class="account-card__menu" type="button" aria-label="Más opciones">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="19" cy="12" r="1"></circle>
+                <circle cx="5" cy="12" r="1"></circle>
+              </svg>
+            </button>
+          </div>
+        </article>
+
+        <!-- Tarjeta para conectar una nueva cuenta -->
+        <button class="account-card account-card--add" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Conectar una cuenta
+        </button>
+      </div>
+    </div>
+</div>

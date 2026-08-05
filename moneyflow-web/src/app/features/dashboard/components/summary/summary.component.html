@@ -1,0 +1,160 @@
+<div class="resumen">
+  <header class="resumen__header">
+    <div>
+      <h1 class="page-title">Hola, {{ userFirstName }}</h1>
+      <p class="page-subtitle">Esto es lo que pasó con tu dinero en julio.</p>
+    </div>
+    <div class="resumen__header-actions">
+      <button class="btn btn--ghost" type="button">Exportar reporte</button>
+      <button class="btn btn--primary" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nueva transacción
+      </button>
+    </div>
+  </header>
+
+
+  <div class="kpi-grid">
+    <article class="kpi-card" *ngFor="let kpi of kpis">
+      <span class="kpi-card__label">{{ kpi.label }}</span>
+      <span class="kpi-card__value figures">
+        {{ kpi.label === 'Tasa de ahorro' ? kpi.value + '%' : formatCurrency(kpi.value) }}
+      </span>
+      <span class="kpi-card__trend" [class.kpi-card__trend--down]="!kpi.positive">
+        <svg *ngIf="kpi.trend >= 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
+        </svg>
+        <svg *ngIf="kpi.trend < 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <polyline points="5 12 12 19 19 12"></polyline>
+        </svg>
+        {{ kpi.trend > 0 ? '+' : '' }}{{ kpi.trend }}{{ kpi.label === 'Tasa de ahorro' ? 'pp' : '%' }}
+        <span class="kpi-card__trend-caption">vs. mes anterior</span>
+      </span>
+    </article>
+  </div>
+
+  <div class="charts-row">
+    <section class="card card--cashflow">
+      <div class="card__header">
+        <h2 class="card__title">Flujo de caja</h2>
+        <div class="legend">
+          <span class="legend__item"><i class="legend__dot legend__dot--income"></i>Ingresos</span>
+          <span class="legend__item"><i class="legend__dot legend__dot--expense"></i>Gastos</span>
+        </div>
+      </div>
+
+      <div class="bar-chart" role="img" aria-label="Ingresos y gastos de los últimos 6 meses">
+        <div class="bar-chart__group" *ngFor="let point of cashflow">
+          <div class="bar-chart__bars">
+            <div class="bar-chart__bar bar-chart__bar--income" [style.height.%]="barHeight(point.income)"
+                 [attr.title]="formatCurrency(point.income)"></div>
+            <div class="bar-chart__bar bar-chart__bar--expense" [style.height.%]="barHeight(point.expense)"
+                 [attr.title]="formatCurrency(point.expense)"></div>
+          </div>
+          <span class="bar-chart__label">{{ point.month }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card card--categories">
+      <div class="card__header">
+        <h2 class="card__title">Gastos por categoría</h2>
+      </div>
+
+      <div class="donut-wrap">
+        <svg class="donut" viewBox="0 0 100 100" role="img" aria-label="Distribución de gastos por categoría">
+          <circle class="donut__track" cx="50" cy="50" r="42" />
+          <circle
+            *ngFor="let slice of categories"
+            class="donut__slice"
+            cx="50" cy="50" r="42"
+            [attr.stroke]="slice.color"
+            [attr.stroke-dasharray]="slice.dashArray"
+            [attr.stroke-dashoffset]="slice.dashOffset">
+          </circle>
+        </svg>
+        <div class="donut__center">
+          <span class="donut__center-value figures">{{ formatCurrency(5340.75) }}</span>
+          <span class="donut__center-label">este mes</span>
+        </div>
+      </div>
+
+      <ul class="category-legend">
+        <li class="category-legend__item" *ngFor="let cat of categories">
+          <i class="category-legend__dot" [style.background]="cat.color"></i>
+          <span class="category-legend__name">{{ cat.name }}</span>
+          <span class="category-legend__percent">{{ cat.percent }}%</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Transacciones + Metas -->
+  <div class="lists-row">
+    <section class="card card--transactions">
+      <div class="card__header">
+        <h2 class="card__title">Transacciones recientes</h2>
+        <a routerLink="/dashboard/transacciones" class="card__link">Ver todas</a>
+      </div>
+
+      <ul class="transaction-list">
+        <li class="transaction-row" *ngFor="let tx of transactions">
+          <div class="transaction-row__icon" [attr.data-icon]="tx.icon">
+            <svg *ngIf="tx.icon === 'cart'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'stream'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <svg *ngIf="tx.icon === 'salary'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'fuel'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="3" y1="22" x2="15" y2="22"></line><line x1="4" y1="9" x2="14" y2="9"></line>
+              <path d="M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18"></path><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V9l-3-3"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'health'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path>
+            </svg>
+          </div>
+          <div class="transaction-row__info">
+            <span class="transaction-row__merchant">{{ tx.merchant }}</span>
+            <span class="transaction-row__category">{{ tx.category }} · {{ tx.date }}</span>
+          </div>
+          <span class="transaction-row__amount figures" [class.transaction-row__amount--positive]="tx.amount > 0">
+            {{ tx.amount > 0 ? '+' : '' }}{{ formatCurrency(tx.amount) }}
+          </span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card card--goals">
+      <div class="card__header">
+        <h2 class="card__title">Progreso de metas</h2>
+        <a routerLink="/dashboard/metas" class="card__link">Ver todas</a>
+      </div>
+
+      <ul class="goal-list">
+        <li class="goal-row" *ngFor="let goal of goals">
+          <div class="goal-row__top">
+            <span class="goal-row__name">{{ goal.name }}</span>
+            <span class="goal-row__percent">{{ goalPercent(goal) }}%</span>
+          </div>
+          <div class="goal-row__track">
+            <div class="goal-row__fill" [style.width.%]="goalPercent(goal)"></div>
+          </div>
+          <div class="goal-row__meta">
+            <span class="figures">{{ formatCurrency(goal.current) }} de {{ formatCurrency(goal.target) }}</span>
+            <span>Meta: {{ goal.dueLabel }}</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+</div>

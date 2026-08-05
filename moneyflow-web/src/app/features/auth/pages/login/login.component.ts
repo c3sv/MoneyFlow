@@ -25,6 +25,9 @@ export class LoginComponent {
   readonly submitted = signal(false);
   readonly passwordVisible = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly sessionExpired = signal(
+    this.activatedRoute.snapshot.queryParamMap.get('sessionExpired') === '1',
+  );
 
   readonly loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
