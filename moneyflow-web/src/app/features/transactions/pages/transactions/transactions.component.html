@@ -1,0 +1,125 @@
+<div class="transactions">
+  <header class="transactions__header">
+    <div>
+      <h1 class="page-title">Transacciones</h1>
+      <p class="page-subtitle">{{ filteredTransactions.length }} resultados</p>
+    </div>
+    <button class="btn btn--primary" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Agregar transacción
+    </button>
+  </header>
+
+  <!-- Barra de filtros -->
+  <div class="filter-bar">
+    <label class="filter-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        placeholder="Buscar por comercio..."
+        [(ngModel)]="searchTerm"
+        aria-label="Buscar transacciones"
+      />
+    </label>
+
+    <div class="filter-type">
+      <button
+        class="filter-type__btn"
+        type="button"
+        [class.filter-type__btn--active]="selectedType === 'all'"
+        (click)="setType('all')"
+      >Todas</button>
+      <button
+        class="filter-type__btn"
+        type="button"
+        [class.filter-type__btn--active]="selectedType === 'income'"
+        (click)="setType('income')"
+      >Ingresos</button>
+      <button
+        class="filter-type__btn"
+        type="button"
+        [class.filter-type__btn--active]="selectedType === 'expense'"
+        (click)="setType('expense')"
+      >Gastos</button>
+    </div>
+
+    <select class="filter-select" [(ngModel)]="selectedCategory" aria-label="Filtrar por categoría">
+      <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+    </select>
+  </div>
+
+  <!-- Resumen rápido del filtro activo -->
+  <div class="filter-summary">
+    <span class="filter-summary__chip filter-summary__chip--income">
+      Ingresos: <strong class="figures">{{ formatCurrency(totalIncome) }}</strong>
+    </span>
+    <span class="filter-summary__chip filter-summary__chip--expense">
+      Gastos: <strong class="figures">{{ formatCurrency(totalExpense) }}</strong>
+    </span>
+  </div>
+
+  <!-- Lista agrupada por fecha -->
+  <div class="transaction-groups" *ngIf="groupedTransactions.length; else emptyState">
+    <section class="transaction-group" *ngFor="let group of groupedTransactions">
+      <h2 class="transaction-group__date">{{ group.date }}</h2>
+
+      <ul class="transaction-list">
+        <li class="transaction-row" *ngFor="let tx of group.transactions">
+          <div class="transaction-row__icon" [attr.data-icon]="tx.icon">
+            <svg *ngIf="tx.icon === 'cart'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'stream'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <svg *ngIf="tx.icon === 'salary'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'fuel'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="3" y1="22" x2="15" y2="22"></line><line x1="4" y1="9" x2="14" y2="9"></line>
+              <path d="M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18"></path><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V9l-3-3"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'health'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path>
+            </svg>
+            <svg *ngIf="tx.icon === 'home'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <svg *ngIf="tx.icon === 'other'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle>
+            </svg>
+          </div>
+
+          <div class="transaction-row__info">
+            <span class="transaction-row__merchant">{{ tx.merchant }}</span>
+            <span class="transaction-row__meta">{{ tx.account }}</span>
+          </div>
+
+          <span class="transaction-row__category">{{ tx.category }}</span>
+
+          <span class="transaction-row__amount figures" [class.transaction-row__amount--positive]="tx.amount > 0">
+            {{ tx.amount > 0 ? '+' : '' }}{{ formatCurrency(tx.amount) }}
+          </span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <p class="empty-state__title">No hay transacciones que coincidan</p>
+      <p class="empty-state__subtitle">Prueba con otro término de búsqueda o quita algún filtro.</p>
+    </div>
+  </ng-template>
+</div>

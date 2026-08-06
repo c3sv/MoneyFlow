@@ -1,0 +1,471 @@
+:host {
+  display: block;
+  --sidebar-width: 264px;
+  --topbar-height: 72px;
+
+  /* ---------------------------------------------
+     Paleta — "Ledger" (verde tinta profunda + papel frío)
+     Elegida para transmitir solidez financiera sin caer
+     en el azul genérico de fintech.
+  --------------------------------------------- */
+  --canvas: #f4f6fa;
+  --surface: #ffffff;
+  --line: #e4e8f0;
+  --line-strong: #d7dce6;
+
+  --ink-900: #10151f;
+  --ink-600: #58637a;
+  --ink-400: #94a0b8;
+
+  --brand-700: #0e4a40;
+  --brand-600: #146356;
+  --brand-500: #1b7a6b;
+  --brand-300: #5cc7ae;
+  --brand-100: #e3f1ec;
+
+  --danger-600: #d1483f;
+  --danger-100: #fbeae8;
+  --danger-300: #f29891;
+
+  /* Sidebar oscuro — separa la navegación fija del contenido,
+     que es donde vive la data y debe ser el protagonista. */
+  --sidebar-bg: #0d1320;
+  --sidebar-bg-raised: #131a29;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-text: #aab2c8;
+  --sidebar-text-strong: #f2f4f8;
+  --sidebar-active-bg: rgba(92, 199, 174, 0.14);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --shadow-sm: 0 1px 2px rgba(16, 21, 31, 0.04);
+  --shadow-md: 0 8px 24px -8px rgba(16, 21, 31, 0.12);
+  --shadow-sidebar: 1px 0 0 rgba(16, 21, 31, 0.04), 4px 0 24px -8px rgba(16, 21, 31, 0.05);
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-standard: all 160ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+
+/* Salto de contenido para lectores de pantalla */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 16px;
+  z-index: 100;
+  background: var(--ink-900);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:focus {
+    top: 16px;
+    transition: top 160ms var(--ease);
+  }
+}
+
+.dashboard-layout {
+  display: flex;
+  height: 100dvh;
+  background-color: var(--canvas);
+  font-family: var(--font-body);
+  color: var(--ink-900);
+  overflow: hidden;
+}
+
+/* ------------------------- Sidebar ------------------------- */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100%;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: var(--shadow-sidebar);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 20;
+
+  /* scrollbar propio, más claro que el global para verse sobre fondo oscuro */
+  .sidebar__nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .sidebar__nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.24);
+  }
+}
+
+.sidebar__brand {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.brand-logo {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(155deg, var(--brand-500), var(--brand-700));
+  color: #fff;
+  border-radius: 9px;
+  box-shadow: 0 4px 10px -3px rgba(14, 74, 64, 0.55);
+
+  svg { width: 19px; height: 19px; }
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--sidebar-text-strong);
+  letter-spacing: -0.01em;
+}
+
+.sidebar__nav {
+  flex: 1;
+  padding: 20px 14px;
+  overflow-y: auto;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-group__label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(170, 178, 200, 0.55);
+  padding: 0 12px;
+  margin-bottom: 8px;
+}
+
+.sidebar__footer {
+  padding: 16px 14px;
+  border-top: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .nav-group__label { margin-top: 2px; }
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  margin: 1px 0;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: var(--transition-standard);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  outline: none;
+
+  /* riel de acento — se revela en hover/activo */
+  &::before {
+    content: '';
+    position: absolute;
+    left: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    border-radius: 0 3px 3px 0;
+    background: var(--brand-300);
+    transition: height 160ms var(--ease);
+  }
+
+  &:hover {
+    background-color: var(--sidebar-bg-raised);
+    color: var(--sidebar-text-strong);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--sidebar-bg), 0 0 0 4px var(--brand-300);
+  }
+
+  &.active {
+    background-color: var(--sidebar-active-bg);
+    color: var(--brand-300);
+    font-weight: 600;
+
+    &::before { height: 18px; }
+    .nav-icon { stroke-width: 2.25; }
+  }
+}
+
+.nav-item__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  transition: var(--transition-standard);
+}
+
+.logout-btn {
+  color: var(--danger-300);
+
+  &::before { background: var(--danger-300); }
+
+  &:hover {
+    background-color: rgba(242, 152, 145, 0.12);
+    color: var(--danger-300);
+  }
+}
+
+/* --------------------- Contenido principal --------------------- */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  height: var(--topbar-height);
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.topbar__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
+  color: var(--ink-600);
+  background-color: var(--canvas);
+  padding: 9px 14px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  transition: var(--transition-standard);
+  cursor: text;
+
+  &:focus-within {
+    background-color: var(--surface);
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px var(--brand-100);
+  }
+
+  svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+  input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    color: var(--ink-900);
+
+    &::placeholder { color: var(--ink-400); }
+  }
+}
+
+.search-shortcut {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ink-400);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar__divider {
+  width: 1px;
+  height: 24px;
+  background: var(--line);
+}
+
+.icon-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  color: var(--ink-600);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: var(--transition-standard);
+  outline: none;
+
+  &:hover {
+    background-color: var(--canvas);
+    color: var(--ink-900);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--brand-500);
+  }
+
+  svg { width: 20px; height: 20px; }
+}
+
+.notification-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--danger-600);
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 5px 8px 5px 5px;
+  border-radius: 10px;
+  transition: var(--transition-standard);
+  border: 1px solid transparent;
+  background: transparent;
+  outline: none;
+
+  &:hover { background-color: var(--canvas); }
+  &:focus-visible {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 2px var(--brand-100);
+  }
+}
+
+.user-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(155deg, var(--brand-500), var(--brand-700));
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border-radius: 50%;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: var(--ink-400);
+}
+
+.dropdown-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-400);
+  margin-left: 2px;
+}
+
+/* Área de inyección de vistas */
+.page-content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+
+  /* Angular destruye y crea un elemento nuevo por cada ruta,
+     así que esta animación se reproduce en cada cambio de sección
+     sin necesidad de tocar el componente ni usar Angular Animations. */
+  > * {
+    animation: page-enter 220ms var(--ease) both;
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------- Responsivo ------------------------- */
+@media (max-width: 1080px) {
+  :host { --sidebar-width: 76px; }
+
+  .brand-name,
+  .nav-item__label,
+  .nav-group__label,
+  .user-meta {
+    display: none;
+  }
+
+  .sidebar__brand { padding: 0; justify-content: center; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .nav-item::before { left: -14px; }
+  .user-profile { padding: 5px; }
+  .dropdown-icon { display: none; }
+}
+
+@media (max-width: 720px) {
+  .topbar__search { max-width: 220px; }
+  .search-shortcut { display: none; }
+}

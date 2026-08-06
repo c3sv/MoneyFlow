@@ -1,0 +1,294 @@
+:host {
+  display: block;
+
+  --canvas: #f4f6fa;
+  --surface: #ffffff;
+  --line: #e4e8f0;
+  --line-strong: #d7dce6;
+  --ink-900: #10151f;
+  --ink-600: #58637a;
+  --ink-400: #94a0b8;
+  --brand-700: #0e4a40;
+  --brand-600: #146356;
+  --brand-500: #1b7a6b;
+  --brand-100: #e3f1ec;
+  --danger-600: #d1483f;
+  --danger-100: #fbeae8;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Acento por tipo de cuenta — ayuda a escanear la grilla de un vistazo */
+  --type-checking: var(--brand-600);
+  --type-savings: #3b82a6;
+  --type-credit: #d1483f;
+  --type-investment: #7c6fd6;
+  --type-wallet: #c99a3d;
+}
+
+.figures {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------- Encabezado ------------------------- */
+.accounts__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+
+.page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--ink-600);
+  margin: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 160ms var(--ease);
+  white-space: nowrap;
+
+  svg { width: 16px; height: 16px; }
+
+  &--primary {
+    background: var(--brand-600);
+    color: #fff;
+
+    &:hover { background: var(--brand-700); }
+  }
+}
+
+/* ------------------------- Franja de patrimonio ------------------------- */
+.net-worth-strip {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px 28px;
+  margin-bottom: 24px;
+  gap: 32px;
+}
+
+.net-worth-strip__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.net-worth-strip__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-600);
+}
+
+.net-worth-strip__value {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--ink-900);
+
+  &--positive { color: var(--brand-600); }
+  &--negative { color: var(--danger-600); }
+}
+
+.net-worth-strip__divider {
+  width: 1px;
+  height: 36px;
+  background: var(--line);
+}
+
+/* ------------------------- Grilla de cuentas ------------------------- */
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.account-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+  transition: box-shadow 160ms var(--ease), transform 160ms var(--ease);
+
+  /* barra de acento por tipo de cuenta */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--ink-400);
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-md, 0 8px 24px -8px rgba(16, 21, 31, 0.12));
+    transform: translateY(-1px);
+  }
+
+  &[data-type='checking']::before { background: var(--type-checking); }
+  &[data-type='savings']::before { background: var(--type-savings); }
+  &[data-type='credit']::before { background: var(--type-credit); }
+  &[data-type='investment']::before { background: var(--type-investment); }
+  &[data-type='wallet']::before { background: var(--type-wallet); }
+}
+
+.account-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-card__bank-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink-900);
+  background: var(--canvas);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.account-card__type {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+
+.account-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-card__nickname {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.account-card__number {
+  font-size: 0.8125rem;
+  color: var(--ink-400);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.account-card__balance {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--ink-900);
+
+  &--negative { color: var(--danger-600); }
+}
+
+.account-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.account-card__synced {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--ink-400);
+
+  svg { width: 13px; height: 13px; }
+}
+
+.account-card__menu {
+  background: transparent;
+  border: none;
+  color: var(--ink-400);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  transition: var(--ease);
+
+  &:hover {
+    background: var(--canvas);
+    color: var(--ink-900);
+  }
+
+  svg { width: 16px; height: 16px; }
+}
+
+/* Tarjeta "agregar cuenta" */
+.account-card--add {
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 8px;
+  border: 1.5px dashed var(--line-strong);
+  color: var(--ink-400);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 100%;
+
+  &::before { display: none; }
+
+  svg { width: 18px; height: 18px; }
+
+  &:hover {
+    border-color: var(--brand-500);
+    color: var(--brand-600);
+    background: var(--brand-100);
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ------------------------- Responsivo ------------------------- */
+@media (max-width: 640px) {
+  .net-worth-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .net-worth-strip__divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .accounts__header {
+    flex-direction: column;
+  }
+}
