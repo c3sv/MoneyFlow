@@ -6,6 +6,7 @@ using MoneyFlow.Domain.MonthlyPlans;
 using MoneyFlow.Domain.SavingsGoals;
 using MoneyFlow.Domain.Transactions;
 using MoneyFlow.Domain.Users;
+using MoneyFlow.Domain.Accounts;
 
 namespace MoneyFlow.Infrastructure.Persistence;
 
@@ -33,6 +34,8 @@ public sealed class MoneyFlowDbContext
 
     public DbSet<FinancialInsight> FinancialInsights =>
         Set<FinancialInsight>();
+    
+    public DbSet<Account> Accounts => Set<Account>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)

@@ -11,6 +11,9 @@ using MoneyFlow.Application.Categories.GetCategories;
 using MoneyFlow.Application.Transactions.GetTransactions;
 using MoneyFlow.Application.SavingsGoals.GetSavingsGoals;
 using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlans;
+using MoneyFlow.Application.Accounts.CreateAccount;
+using MoneyFlow.Application.Accounts.GetAccounts;
+using MoneyFlow.Application.Accounts.UpdateAccountBalance;
 
 namespace MoneyFlow.Application;
 
@@ -35,6 +38,10 @@ public static class DependencyInjection
         services.AddScoped<GetTransactionsHandler>();
         services.AddScoped<GetSavingsGoalsHandler>();
         services.AddScoped<GetMonthlyPlansHandler>();
+        
+        services.AddScoped<CreateAccountHandler>();
+        services.AddScoped<GetAccountsHandler>();
+        services.AddScoped<UpdateAccountBalanceHandler>();
         
         return services;
     }
