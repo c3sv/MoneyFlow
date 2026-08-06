@@ -49,6 +49,8 @@ public static class DependencyInjection
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
 
         services.AddScoped<IMonthlyPlanRepository, MonthlyPlanRepository>();
+        
+        services.AddScoped<IAccountRepository, AccountRepository>();
     }
 
     private static void AddAuthenticationServices(
