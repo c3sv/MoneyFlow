@@ -67,4 +67,8 @@ public sealed class MonthlyPlanRepository : IMonthlyPlanRepository
             limit => limit.CategoryId == categoryId,
             cancellationToken);
     }
+    public void Remove(MonthlyPlan monthlyPlan)
+    {
+        _dbContext.MonthlyPlans.Remove(monthlyPlan);
+    }
 }

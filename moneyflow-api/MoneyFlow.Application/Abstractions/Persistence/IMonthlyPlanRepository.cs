@@ -25,4 +25,6 @@ public interface IMonthlyPlanRepository
     Task<bool> HasCategoryLimitAsync(
         long categoryId,
         CancellationToken cancellationToken = default);
+    
+    void Remove(MonthlyPlan monthlyPlan);
 }

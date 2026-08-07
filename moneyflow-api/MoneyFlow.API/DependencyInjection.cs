@@ -24,6 +24,11 @@ using MoneyFlow.Application.Accounts.UpdateAccount;
 using MoneyFlow.Application.SavingsGoals.DeleteSavingsGoal;
 using MoneyFlow.Application.SavingsGoals.GetSavingsGoalById;
 using MoneyFlow.Application.SavingsGoals.UpdateSavingsGoal;
+using MoneyFlow.Application.MonthlyPlans.DeleteCategoryLimit;
+using MoneyFlow.Application.MonthlyPlans.DeleteMonthlyPlan;
+using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlanById;
+using MoneyFlow.Application.MonthlyPlans.UpdateCategoryLimit;
+using MoneyFlow.Application.MonthlyPlans.UpdateMonthlyPlan;
 
 namespace MoneyFlow.Application;
 
@@ -38,15 +43,9 @@ public static class DependencyInjection
         services.AddScoped<CreateCategoryHandler>();
         services.AddScoped<CreateTransactionHandler>();
         
-        services.AddScoped<CreateMonthlyPlanHandler>();
-        services.AddScoped<AddCategoryLimitHandler>();
-        
         services.AddScoped<GetCategoriesHandler>();
         services.AddScoped<UpdateCategoryHandler>();
         services.AddScoped<DeleteCategoryHandler>();
-        
-        
-        services.AddScoped<GetMonthlyPlansHandler>();
         
         services.AddScoped<GetTransactionsHandler>();
         services.AddScoped<GetTransactionByIdHandler>();
@@ -65,6 +64,17 @@ public static class DependencyInjection
         services.AddScoped<UpdateSavingsGoalHandler>();
         services.AddScoped<AddSavingsGoalProgressHandler>();
         services.AddScoped<DeleteSavingsGoalHandler>();
+        
+        services.AddScoped<CreateMonthlyPlanHandler>();
+        services.AddScoped<GetMonthlyPlansHandler>();
+        services.AddScoped<GetMonthlyPlanByIdHandler>();
+        services.AddScoped<UpdateMonthlyPlanHandler>();
+        services.AddScoped<DeleteMonthlyPlanHandler>();
+        
+        services.AddScoped<AddCategoryLimitHandler>();
+        services.AddScoped<UpdateCategoryLimitHandler>();
+        services.AddScoped<DeleteCategoryLimitHandler>();
+        
         return services;
     }
 }
