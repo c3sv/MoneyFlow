@@ -21,9 +21,10 @@ public sealed class JwtTokenProvider : ITokenProvider
         _dateTimeProvider = dateTimeProvider;
     }
 
-    public string Generate(User user)
+    public GeneratedAccessToken Generate(User user)
     {
         var now = _dateTimeProvider.UtcNow;
+        var expiresAt = now.AddMinutes(_settings.ExpirationMinutes);
 
         var claims = new List<Claim>
         {
@@ -60,12 +61,14 @@ public sealed class JwtTokenProvider : ITokenProvider
             audience: _settings.Audience,
             claims: claims,
             notBefore: now.UtcDateTime,
-            expires: now
-                .AddMinutes(_settings.ExpirationMinutes)
-                .UtcDateTime,
+            expires: expiresAt.UtcDateTime,
             signingCredentials: signingCredentials);
 
-        return new JwtSecurityTokenHandler()
+        var serializedToken = new JwtSecurityTokenHandler()
             .WriteToken(token);
+
+        return new GeneratedAccessToken(
+            serializedToken,
+            expiresAt);
     }
 }

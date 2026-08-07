@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyFlow.Application.Abstractions.Persistence;
+using MoneyFlow.Domain.Accounts;
 using MoneyFlow.Domain.Categories;
 using MoneyFlow.Domain.FinancialInsights;
 using MoneyFlow.Domain.MonthlyPlans;
+using MoneyFlow.Domain.RefreshTokens;
 using MoneyFlow.Domain.SavingsGoals;
 using MoneyFlow.Domain.Transactions;
 using MoneyFlow.Domain.Users;
-using MoneyFlow.Domain.Accounts;
 
 namespace MoneyFlow.Infrastructure.Persistence;
 
@@ -34,8 +35,10 @@ public sealed class MoneyFlowDbContext
 
     public DbSet<FinancialInsight> FinancialInsights =>
         Set<FinancialInsight>();
-    
+
     public DbSet<Account> Accounts => Set<Account>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
@@ -45,6 +48,7 @@ public sealed class MoneyFlowDbContext
 
         base.OnModelCreating(modelBuilder);
     }
+
     public async Task ExecuteInTransactionAsync(
         Func<CancellationToken, Task> operation,
         CancellationToken cancellationToken = default)

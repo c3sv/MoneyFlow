@@ -4,5 +4,5 @@ namespace MoneyFlow.Application.Abstractions.Services;
 
 public interface ITokenProvider
 {
-    string Generate(User user);
+    GeneratedAccessToken Generate(User user);
 }
