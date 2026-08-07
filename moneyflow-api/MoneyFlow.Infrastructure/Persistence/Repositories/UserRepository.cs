@@ -22,6 +22,16 @@ public sealed class UserRepository : IUserRepository
             cancellationToken);
     }
 
+    public Task<User?> GetByIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Users
+            .FirstOrDefaultAsync(
+                user => user.Id == userId,
+                cancellationToken);
+    }
+
     public Task<User?> GetByEmailAsync(
         string email,
         CancellationToken cancellationToken = default)
@@ -31,6 +41,18 @@ public sealed class UserRepository : IUserRepository
             .FirstOrDefaultAsync(
                 user => user.Email == email,
                 cancellationToken);
+    }
+
+    public Task<bool> ExistsByEmailExcludingIdAsync(
+        string email,
+        long excludedUserId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Users.AnyAsync(
+            user =>
+                user.Email == email &&
+                user.Id != excludedUserId,
+            cancellationToken);
     }
 
     public async Task AddAsync(
