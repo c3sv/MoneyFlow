@@ -24,6 +24,7 @@ public sealed class GetTransactionsHandler
         return transactions
             .Select(transaction => new TransactionResult(
                 transaction.Id,
+                transaction.AccountId,
                 transaction.CategoryId,
                 transaction.Amount,
                 transaction.Description,

@@ -7,17 +7,20 @@ namespace MoneyFlow.Application.Transactions.CreateTransaction;
 public sealed class CreateTransactionHandler
 {
     private readonly IUserRepository _userRepository;
+    private readonly IAccountRepository _accountRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly ITransactionRepository _transactionRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateTransactionHandler(
         IUserRepository userRepository,
+        IAccountRepository accountRepository,
         ICategoryRepository categoryRepository,
         ITransactionRepository transactionRepository,
         IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository;
+        _accountRepository = accountRepository;
         _categoryRepository = categoryRepository;
         _transactionRepository = transactionRepository;
         _unitOfWork = unitOfWork;
@@ -35,6 +38,22 @@ public sealed class CreateTransactionHandler
         {
             throw new NotFoundException(
                 $"User with id {command.UserId} was not found.");
+        }
+
+        var account = await _accountRepository.GetByIdAsync(
+            command.AccountId,
+            cancellationToken);
+
+        if (account is null)
+        {
+            throw new NotFoundException(
+                $"Account with id {command.AccountId} was not found.");
+        }
+
+        if (account.UserId != command.UserId)
+        {
+            throw new BusinessRuleException(
+                "The account does not belong to the user.");
         }
 
         var category = await _categoryRepository.GetByIdAsync(
@@ -59,8 +78,13 @@ public sealed class CreateTransactionHandler
                 "Transaction type must match the category type.");
         }
 
+        account.ApplyTransaction(
+            command.Type,
+            command.Amount);
+
         var transaction = new Transaction(
             command.UserId,
+            command.AccountId,
             command.CategoryId,
             command.Amount,
             command.Description,
@@ -71,7 +95,8 @@ public sealed class CreateTransactionHandler
             transaction,
             cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
 
         return transaction.Id;
     }

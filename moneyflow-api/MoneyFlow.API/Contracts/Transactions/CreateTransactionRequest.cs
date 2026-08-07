@@ -3,6 +3,7 @@
 namespace MoneyFlow.API.Contracts.Transactions;
 
 public sealed record CreateTransactionRequest(
+    long AccountId,
     long CategoryId,
     decimal Amount,
     string? Description,

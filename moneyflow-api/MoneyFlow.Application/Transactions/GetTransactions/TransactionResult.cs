@@ -4,6 +4,7 @@ namespace MoneyFlow.Application.Transactions.GetTransactions;
 
 public sealed record TransactionResult(
     long Id,
+    long AccountId,
     long CategoryId,
     decimal Amount,
     string? Description,
