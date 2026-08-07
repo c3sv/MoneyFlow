@@ -15,4 +15,6 @@ public interface ISavingsGoalRepository
     Task AddAsync(
         SavingsGoal savingsGoal,
         CancellationToken cancellationToken = default);
+    
+    void Remove(SavingsGoal savingsGoal);
 }

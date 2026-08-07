@@ -1,60 +1,51 @@
 ﻿using MoneyFlow.Application.Abstractions.Persistence;
 using MoneyFlow.Application.Abstractions.Services;
 using MoneyFlow.Application.Common.Exceptions;
-using MoneyFlow.Domain.SavingsGoals;
 
-namespace MoneyFlow.Application.SavingsGoals.CreateSavingsGoal;
+namespace MoneyFlow.Application.SavingsGoals.UpdateSavingsGoal;
 
-public sealed class CreateSavingsGoalHandler
+public sealed class UpdateSavingsGoalHandler
 {
-    private readonly IUserRepository _userRepository;
     private readonly ISavingsGoalRepository _savingsGoalRepository;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateSavingsGoalHandler(
-        IUserRepository userRepository,
+    public UpdateSavingsGoalHandler(
         ISavingsGoalRepository savingsGoalRepository,
         IDateTimeProvider dateTimeProvider,
         IUnitOfWork unitOfWork)
     {
-        _userRepository = userRepository;
         _savingsGoalRepository = savingsGoalRepository;
         _dateTimeProvider = dateTimeProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<long> HandleAsync(
-        CreateSavingsGoalCommand command,
+    public async Task HandleAsync(
+        UpdateSavingsGoalCommand command,
         CancellationToken cancellationToken = default)
     {
-        var userExists = await _userRepository.ExistsByIdAsync(
-            command.UserId,
-            cancellationToken);
+        var savingsGoal =
+            await _savingsGoalRepository.GetByIdAsync(
+                command.SavingsGoalId,
+                cancellationToken);
 
-        if (!userExists)
+        if (savingsGoal is null ||
+            savingsGoal.UserId != command.UserId)
         {
             throw new NotFoundException(
-                $"User with id {command.UserId} was not found.");
+                $"Savings goal with id {command.SavingsGoalId} was not found.");
         }
 
         var currentDate = DateOnly.FromDateTime(
             _dateTimeProvider.UtcNow.UtcDateTime);
 
-        var savingsGoal = new SavingsGoal(
-            command.UserId,
+        savingsGoal.UpdateDetails(
             command.Title,
             command.TargetAmount,
             command.Deadline,
             currentDate);
 
-        await _savingsGoalRepository.AddAsync(
-            savingsGoal,
-            cancellationToken);
-
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
-
-        return savingsGoal.Id;
     }
 }

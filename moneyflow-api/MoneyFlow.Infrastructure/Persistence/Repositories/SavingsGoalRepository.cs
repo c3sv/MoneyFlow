@@ -43,4 +43,8 @@ public sealed class SavingsGoalRepository : ISavingsGoalRepository
             .ThenBy(goal => goal.Title)
             .ToListAsync(cancellationToken);
     }
+    public void Remove(SavingsGoal savingsGoal)
+    {
+        _dbContext.SavingsGoals.Remove(savingsGoal);
+    }
 }
