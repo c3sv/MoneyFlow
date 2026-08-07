@@ -1,14 +1,14 @@
 ﻿using MoneyFlow.Application.Abstractions.Persistence;
 using MoneyFlow.Application.Common.Exceptions;
 
-namespace MoneyFlow.Application.Accounts.UpdateAccountBalance;
+namespace MoneyFlow.Application.Accounts.UpdateAccount;
 
-public sealed class UpdateAccountBalanceHandler
+public sealed class UpdateAccountHandler
 {
     private readonly IAccountRepository _accountRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateAccountBalanceHandler(
+    public UpdateAccountHandler(
         IAccountRepository accountRepository,
         IUnitOfWork unitOfWork)
     {
@@ -17,27 +17,27 @@ public sealed class UpdateAccountBalanceHandler
     }
 
     public async Task HandleAsync(
-        UpdateAccountBalanceCommand command,
+        UpdateAccountCommand command,
         CancellationToken cancellationToken = default)
     {
         var account = await _accountRepository.GetByIdAsync(
             command.AccountId,
             cancellationToken);
 
-        if (account is null)
+        if (account is null ||
+            account.UserId != command.UserId)
         {
             throw new NotFoundException(
                 $"Account with id {command.AccountId} was not found.");
         }
 
-        if (account.UserId != command.UserId)
-        {
-            throw new BusinessRuleException(
-                "The account does not belong to the user.");
-        }
+        account.UpdateDetails(
+            command.Bank,
+            command.Nickname,
+            command.Type,
+            command.Last4);
 
-        account.UpdateBalance(command.NewBalance);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
     }
 }

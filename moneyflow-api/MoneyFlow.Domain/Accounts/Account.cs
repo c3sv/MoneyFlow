@@ -4,6 +4,10 @@ namespace MoneyFlow.Domain.Accounts;
 
 public sealed class Account
 {
+    private const int MaxBankLength = 100;
+    private const int MaxNicknameLength = 150;
+    private const string SupportedCurrency = "PEN";
+
     private Account()
     {
     }
@@ -37,57 +41,46 @@ public sealed class Account
     {
         if (userId <= 0)
         {
-            throw new DomainException("User id must be greater than zero.");
-        }
-
-        if (string.IsNullOrWhiteSpace(bank))
-        {
-            throw new DomainException("Bank name is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(nickname))
-        {
-            throw new DomainException("Account nickname is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(last4) || last4.Trim().Length != 4)
-        {
             throw new DomainException(
-                "Last4 must contain exactly 4 characters.");
-        }
-
-        if (type != AccountType.Credit && initialBalance < 0)
-        {
-            throw new DomainException(
-                "Only credit accounts can have a negative balance.");
-        }
-
-        if (string.IsNullOrWhiteSpace(currency))
-        {
-            throw new DomainException("Currency is required.");
+                "User id must be greater than zero.");
         }
 
         UserId = userId;
-        Bank = bank.Trim();
-        Nickname = nickname.Trim();
-        Type = type;
-        Last4 = last4.Trim();
         Balance = initialBalance;
-        Currency = currency.Trim().ToUpperInvariant();
-        UpdatedAt = DateTime.UtcNow;
+        Currency = NormalizeCurrency(currency);
+
+        UpdateDetails(
+            bank,
+            nickname,
+            type,
+            last4);
     }
 
-    public void UpdateBalance(decimal newBalance)
+    public void UpdateDetails(
+        string bank,
+        string nickname,
+        AccountType type,
+        string last4)
     {
-        if (Type != AccountType.Credit && newBalance < 0)
+        if (!Enum.IsDefined(type))
         {
             throw new DomainException(
-                "Only credit accounts can have a negative balance.");
+                "Account type is invalid.");
         }
 
-        Balance = newBalance;
+        if (type != AccountType.Credit && Balance < 0)
+        {
+            throw new DomainException(
+                "An account with a negative balance must remain a credit account.");
+        }
+
+        Bank = NormalizeBank(bank);
+        Nickname = NormalizeNickname(nickname);
+        Type = type;
+        Last4 = NormalizeLast4(last4);
         UpdatedAt = DateTime.UtcNow;
     }
+
     public void ApplyTransaction(
         TransactionType transactionType,
         decimal amount)
@@ -114,8 +107,13 @@ public sealed class Account
         TransactionType newType,
         decimal newAmount)
     {
-        ValidateTransaction(previousType, previousAmount);
-        ValidateTransaction(newType, newAmount);
+        ValidateTransaction(
+            previousType,
+            previousAmount);
+
+        ValidateTransaction(
+            newType,
+            newAmount);
 
         var previousEffect =
             GetBalanceEffect(previousType, previousAmount);
@@ -173,5 +171,84 @@ public sealed class Account
             throw new DomainException(
                 "Transaction type is invalid.");
         }
+    }
+
+    private static string NormalizeBank(string bank)
+    {
+        if (string.IsNullOrWhiteSpace(bank))
+        {
+            throw new DomainException(
+                "Bank name is required.");
+        }
+
+        var normalizedBank = bank.Trim();
+
+        if (normalizedBank.Length > MaxBankLength)
+        {
+            throw new DomainException(
+                $"Bank name cannot exceed {MaxBankLength} characters.");
+        }
+
+        return normalizedBank;
+    }
+
+    private static string NormalizeNickname(string nickname)
+    {
+        if (string.IsNullOrWhiteSpace(nickname))
+        {
+            throw new DomainException(
+                "Account nickname is required.");
+        }
+
+        var normalizedNickname = nickname.Trim();
+
+        if (normalizedNickname.Length > MaxNicknameLength)
+        {
+            throw new DomainException(
+                $"Account nickname cannot exceed {MaxNicknameLength} characters.");
+        }
+
+        return normalizedNickname;
+    }
+
+    private static string NormalizeLast4(string last4)
+    {
+        if (string.IsNullOrWhiteSpace(last4))
+        {
+            throw new DomainException(
+                "Last4 is required.");
+        }
+
+        var normalizedLast4 = last4.Trim();
+
+        if (normalizedLast4.Length != 4 ||
+            normalizedLast4.Any(character =>
+                !char.IsDigit(character)))
+        {
+            throw new DomainException(
+                "Last4 must contain exactly 4 digits.");
+        }
+
+        return normalizedLast4;
+    }
+
+    private static string NormalizeCurrency(string currency)
+    {
+        if (string.IsNullOrWhiteSpace(currency))
+        {
+            throw new DomainException(
+                "Currency is required.");
+        }
+
+        var normalizedCurrency =
+            currency.Trim().ToUpperInvariant();
+
+        if (normalizedCurrency != SupportedCurrency)
+        {
+            throw new DomainException(
+                $"Only {SupportedCurrency} currency is supported.");
+        }
+
+        return normalizedCurrency;
     }
 }
