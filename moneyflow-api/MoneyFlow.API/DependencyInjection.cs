@@ -29,6 +29,7 @@ using MoneyFlow.Application.MonthlyPlans.DeleteMonthlyPlan;
 using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlanById;
 using MoneyFlow.Application.MonthlyPlans.UpdateCategoryLimit;
 using MoneyFlow.Application.MonthlyPlans.UpdateMonthlyPlan;
+using MoneyFlow.Application.Users.ChangePassword;
 using MoneyFlow.Application.Users.GetCurrentUser;
 using MoneyFlow.Application.Users.UpdateUserProfile;
 
@@ -79,6 +80,7 @@ public static class DependencyInjection
         
         services.AddScoped<GetCurrentUserHandler>();
         services.AddScoped<UpdateUserProfileHandler>();
+        services.AddScoped<ChangePasswordHandler>();
         
         return services;
     }

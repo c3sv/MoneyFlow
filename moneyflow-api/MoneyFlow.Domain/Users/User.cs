@@ -64,6 +64,14 @@ public sealed class User
         Email = NormalizeEmail(email);
     }
 
+    public void ChangePasswordHash(string passwordHash)
+    {
+        PasswordHash = ValidateRequired(
+            passwordHash,
+            "Password hash",
+            MaxPasswordHashLength);
+    }
+
     private static string ValidateRequired(
         string value,
         string fieldName,
