@@ -15,11 +15,24 @@ public interface ICategoryRepository
         TransactionType type,
         CancellationToken cancellationToken = default);
 
+    Task<bool> ExistsByNameAndTypeExcludingIdAsync(
+        long userId,
+        string name,
+        TransactionType type,
+        long excludedCategoryId,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(
         Category category,
         CancellationToken cancellationToken = default);
-    
+
+    Task AddRangeAsync(
+        IEnumerable<Category> categories,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Category>> GetByUserIdAsync(
         long userId,
         CancellationToken cancellationToken = default);
+    
+    void Remove(Category category);
 }

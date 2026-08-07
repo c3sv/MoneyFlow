@@ -4,6 +4,9 @@ namespace MoneyFlow.Domain.Categories;
 
 public sealed class Category
 {
+    private const int MaxNameLength = 100;
+    private const int MaxIconLength = 100;
+
     private Category()
     {
     }
@@ -26,29 +29,64 @@ public sealed class Category
     {
         if (userId <= 0)
         {
-            throw new DomainException("User id must be greater than zero.");
-        }
-
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new DomainException("Category name is required.");
+            throw new DomainException(
+                "User id must be greater than zero.");
         }
 
         if (!Enum.IsDefined(type))
         {
-            throw new DomainException("Category type is invalid.");
+            throw new DomainException(
+                "Category type is invalid.");
         }
 
         UserId = userId;
-        Name = name.Trim();
         Type = type;
+
+        UpdateDetails(name, icon);
+    }
+
+    public void UpdateDetails(
+        string name,
+        string? icon)
+    {
+        Name = NormalizeName(name);
         Icon = NormalizeIcon(icon);
+    }
+
+    private static string NormalizeName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new DomainException(
+                "Category name is required.");
+        }
+
+        var normalizedName = name.Trim();
+
+        if (normalizedName.Length > MaxNameLength)
+        {
+            throw new DomainException(
+                $"Category name cannot exceed {MaxNameLength} characters.");
+        }
+
+        return normalizedName;
     }
 
     private static string? NormalizeIcon(string? icon)
     {
-        return string.IsNullOrWhiteSpace(icon)
-            ? null
-            : icon.Trim();
+        if (string.IsNullOrWhiteSpace(icon))
+        {
+            return null;
+        }
+
+        var normalizedIcon = icon.Trim();
+
+        if (normalizedIcon.Length > MaxIconLength)
+        {
+            throw new DomainException(
+                $"Category icon cannot exceed {MaxIconLength} characters.");
+        }
+
+        return normalizedIcon;
     }
 }

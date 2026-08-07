@@ -21,4 +21,8 @@ public interface IMonthlyPlanRepository
     Task<IReadOnlyList<MonthlyPlan>> GetByUserIdAsync(
         long userId,
         CancellationToken cancellationToken = default);
+    
+    Task<bool> HasCategoryLimitAsync(
+        long categoryId,
+        CancellationToken cancellationToken = default);
 }

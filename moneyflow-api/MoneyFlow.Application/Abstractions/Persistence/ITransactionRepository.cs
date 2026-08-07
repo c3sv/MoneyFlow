@@ -11,4 +11,7 @@ public interface ITransactionRepository
     Task AddAsync(
         Transaction transaction,
         CancellationToken cancellationToken = default);
+    Task<bool> ExistsByCategoryIdAsync(
+        long categoryId,
+        CancellationToken cancellationToken = default);
 }

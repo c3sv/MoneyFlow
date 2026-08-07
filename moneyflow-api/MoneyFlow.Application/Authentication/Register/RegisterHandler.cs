@@ -1,6 +1,7 @@
 ﻿using MoneyFlow.Application.Abstractions.Persistence;
 using MoneyFlow.Application.Abstractions.Services;
 using MoneyFlow.Application.Common.Exceptions;
+using MoneyFlow.Domain.Categories;
 using MoneyFlow.Domain.Users;
 
 namespace MoneyFlow.Application.Authentication.Register;
@@ -8,6 +9,7 @@ namespace MoneyFlow.Application.Authentication.Register;
 public sealed class RegisterHandler
 {
     private readonly IUserRepository _userRepository;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenProvider _tokenProvider;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -15,12 +17,14 @@ public sealed class RegisterHandler
 
     public RegisterHandler(
         IUserRepository userRepository,
+        ICategoryRepository categoryRepository,
         IPasswordHasher passwordHasher,
         ITokenProvider tokenProvider,
         IDateTimeProvider dateTimeProvider,
         IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository;
+        _categoryRepository = categoryRepository;
         _passwordHasher = passwordHasher;
         _tokenProvider = tokenProvider;
         _dateTimeProvider = dateTimeProvider;
@@ -55,9 +59,27 @@ public sealed class RegisterHandler
                 "A user with the same email already exists.");
         }
 
-        await _userRepository.AddAsync(user, cancellationToken);
+        await _unitOfWork.ExecuteInTransactionAsync(
+            async transactionCancellationToken =>
+            {
+                await _userRepository.AddAsync(
+                    user,
+                    transactionCancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(
+                    transactionCancellationToken);
+
+                var defaultCategories =
+                    DefaultCategoryFactory.CreateForUser(user.Id);
+
+                await _categoryRepository.AddRangeAsync(
+                    defaultCategories,
+                    transactionCancellationToken);
+
+                await _unitOfWork.SaveChangesAsync(
+                    transactionCancellationToken);
+            },
+            cancellationToken);
 
         var token = _tokenProvider.Generate(user);
 

@@ -31,4 +31,12 @@ public sealed class TransactionRepository : ITransactionRepository
             .ThenByDescending(transaction => transaction.Id)
             .ToListAsync(cancellationToken);
     }
+    public Task<bool> ExistsByCategoryIdAsync(
+        long categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Transactions.AnyAsync(
+            transaction => transaction.CategoryId == categoryId,
+            cancellationToken);
+    }
 }
