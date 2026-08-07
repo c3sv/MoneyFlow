@@ -18,4 +18,7 @@ public interface ITransactionRepository
         long transactionId,
         CancellationToken cancellationToken = default);
     void Remove(Transaction transaction);
+    Task<bool> ExistsByAccountIdAsync(
+        long accountId,
+        CancellationToken cancellationToken = default);
 }

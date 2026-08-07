@@ -13,12 +13,14 @@ using MoneyFlow.Application.SavingsGoals.GetSavingsGoals;
 using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlans;
 using MoneyFlow.Application.Accounts.CreateAccount;
 using MoneyFlow.Application.Accounts.GetAccounts;
-using MoneyFlow.Application.Accounts.UpdateAccountBalance;
 using MoneyFlow.Application.Categories.UpdateCategory;
 using MoneyFlow.Application.Categories.DeleteCategory;
 using MoneyFlow.Application.Transactions.DeleteTransaction;
 using MoneyFlow.Application.Transactions.GetTransactionById;
 using MoneyFlow.Application.Transactions.UpdateTransaction;
+using MoneyFlow.Application.Accounts.DeleteAccount;
+using MoneyFlow.Application.Accounts.GetAccountById;
+using MoneyFlow.Application.Accounts.UpdateAccount;
 
 
 namespace MoneyFlow.Application;
@@ -48,16 +50,16 @@ public static class DependencyInjection
         services.AddScoped<GetSavingsGoalsHandler>();
         services.AddScoped<GetMonthlyPlansHandler>();
         
-        services.AddScoped<CreateAccountHandler>();
-        services.AddScoped<GetAccountsHandler>();
-        services.AddScoped<UpdateAccountBalanceHandler>();
-        
         services.AddScoped<GetTransactionsHandler>();
         services.AddScoped<GetTransactionByIdHandler>();
         services.AddScoped<UpdateTransactionHandler>();
         services.AddScoped<DeleteTransactionHandler>();
 
-        
+        services.AddScoped<CreateAccountHandler>();
+        services.AddScoped<GetAccountsHandler>();
+        services.AddScoped<GetAccountByIdHandler>();
+        services.AddScoped<UpdateAccountHandler>();
+        services.AddScoped<DeleteAccountHandler>();
         return services;
     }
 }

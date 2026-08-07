@@ -53,4 +53,13 @@ public sealed class TransactionRepository : ITransactionRepository
     {
         _dbContext.Transactions.Remove(transaction);
     }
+    
+    public Task<bool> ExistsByAccountIdAsync(
+        long accountId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Transactions.AnyAsync(
+            transaction => transaction.AccountId == accountId,
+            cancellationToken);
+    }
 }

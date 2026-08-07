@@ -41,4 +41,8 @@ public sealed class AccountRepository : IAccountRepository
             .ThenBy(account => account.Nickname)
             .ToListAsync(cancellationToken);
     }
+    public void Remove(Account account)
+    {
+        _dbContext.Accounts.Remove(account);
+    }
 }
