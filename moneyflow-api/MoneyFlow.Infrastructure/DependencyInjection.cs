@@ -49,8 +49,10 @@ public static class DependencyInjection
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
 
         services.AddScoped<IMonthlyPlanRepository, MonthlyPlanRepository>();
-        
+
         services.AddScoped<IAccountRepository, AccountRepository>();
+
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
     }
 
     private static void AddAuthenticationServices(
@@ -76,10 +78,16 @@ public static class DependencyInjection
                 settings =>
                     settings.ExpirationMinutes > 0,
                 "JWT expiration must be greater than zero.")
+            .Validate(
+                settings =>
+                    settings.RefreshTokenExpirationDays is > 0 and <= 365,
+                "Refresh token expiration must be between 1 and 365 days.")
             .ValidateOnStart();
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
         services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+
+        services.AddSingleton<IRefreshTokenProvider, RefreshTokenProvider>();
     }
 }

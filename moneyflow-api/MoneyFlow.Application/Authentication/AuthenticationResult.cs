@@ -5,4 +5,7 @@ public sealed record AuthenticationResult(
     string FirstName,
     string LastName,
     string Email,
-    string Token);
+    string AccessToken,
+    DateTimeOffset AccessTokenExpiresAt,
+    string RefreshToken,
+    DateTimeOffset RefreshTokenExpiresAt);

@@ -23,6 +23,11 @@ public sealed class GlobalExceptionHandler
     {
         var (statusCode, title, detail) = exception switch
         {
+            UnauthorizedException => (
+                StatusCodes.Status401Unauthorized,
+                "Unauthorized",
+                exception.Message),
+
             NotFoundException => (
                 StatusCodes.Status404NotFound,
                 "Resource not found",
