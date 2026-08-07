@@ -4,6 +4,8 @@ namespace MoneyFlow.Domain.Transactions;
 
 public sealed class Transaction
 {
+    private const int MaxDescriptionLength = 500;
+
     private Transaction()
     {
     }
@@ -39,6 +41,25 @@ public sealed class Transaction
                 "User id must be greater than zero.");
         }
 
+        UserId = userId;
+
+        UpdateDetails(
+            accountId,
+            categoryId,
+            amount,
+            description,
+            date,
+            type);
+    }
+
+    public void UpdateDetails(
+        long accountId,
+        long categoryId,
+        decimal amount,
+        string? description,
+        DateOnly date,
+        TransactionType type)
+    {
         if (accountId <= 0)
         {
             throw new DomainException(
@@ -63,15 +84,15 @@ public sealed class Transaction
                 "Transaction type is invalid.");
         }
 
-        var normalizedDescription = NormalizeDescription(description);
+        var normalizedDescription =
+            NormalizeDescription(description);
 
-        if (normalizedDescription?.Length > 500)
+        if (normalizedDescription?.Length > MaxDescriptionLength)
         {
             throw new DomainException(
-                "Transaction description cannot exceed 500 characters.");
+                $"Transaction description cannot exceed {MaxDescriptionLength} characters.");
         }
 
-        UserId = userId;
         AccountId = accountId;
         CategoryId = categoryId;
         Amount = amount;
@@ -80,7 +101,8 @@ public sealed class Transaction
         Type = type;
     }
 
-    private static string? NormalizeDescription(string? description)
+    private static string? NormalizeDescription(
+        string? description)
     {
         return string.IsNullOrWhiteSpace(description)
             ? null

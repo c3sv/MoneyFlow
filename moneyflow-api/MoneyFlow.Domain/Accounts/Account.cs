@@ -88,8 +88,77 @@ public sealed class Account
         Balance = newBalance;
         UpdatedAt = DateTime.UtcNow;
     }
-
     public void ApplyTransaction(
+        TransactionType transactionType,
+        decimal amount)
+    {
+        ValidateTransaction(transactionType, amount);
+
+        ChangeBalance(
+            GetBalanceEffect(transactionType, amount));
+    }
+
+    public void ReverseTransaction(
+        TransactionType transactionType,
+        decimal amount)
+    {
+        ValidateTransaction(transactionType, amount);
+
+        ChangeBalance(
+            -GetBalanceEffect(transactionType, amount));
+    }
+
+    public void ReplaceTransaction(
+        TransactionType previousType,
+        decimal previousAmount,
+        TransactionType newType,
+        decimal newAmount)
+    {
+        ValidateTransaction(previousType, previousAmount);
+        ValidateTransaction(newType, newAmount);
+
+        var previousEffect =
+            GetBalanceEffect(previousType, previousAmount);
+
+        var newEffect =
+            GetBalanceEffect(newType, newAmount);
+
+        ChangeBalance(newEffect - previousEffect);
+    }
+
+    private void ChangeBalance(decimal balanceChange)
+    {
+        if (balanceChange == 0)
+        {
+            return;
+        }
+
+        var newBalance = Balance + balanceChange;
+
+        if (Type != AccountType.Credit && newBalance < 0)
+        {
+            throw new DomainException(
+                "The account does not have enough balance.");
+        }
+
+        Balance = newBalance;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    private static decimal GetBalanceEffect(
+        TransactionType transactionType,
+        decimal amount)
+    {
+        return transactionType switch
+        {
+            TransactionType.Income => amount,
+            TransactionType.Expense => -amount,
+            _ => throw new DomainException(
+                "Transaction type is invalid.")
+        };
+    }
+
+    private static void ValidateTransaction(
         TransactionType transactionType,
         decimal amount)
     {
@@ -104,23 +173,5 @@ public sealed class Account
             throw new DomainException(
                 "Transaction type is invalid.");
         }
-
-        var newBalance = transactionType switch
-        {
-            TransactionType.Income => Balance + amount,
-            TransactionType.Expense => Balance - amount,
-            _ => throw new DomainException(
-                "Transaction type is invalid.")
-        };
-
-        if (Type != AccountType.Credit && newBalance < 0)
-        {
-            throw new DomainException(
-                "The account does not have enough balance.");
-        }
-
-        Balance = newBalance;
-        UpdatedAt = DateTime.UtcNow;
     }
-    
 }
