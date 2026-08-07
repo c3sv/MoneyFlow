@@ -26,14 +26,9 @@ public sealed class MonthlyPlanCategoryLimit
                 "Category id must be greater than zero.");
         }
 
-        if (limitAmount < 0)
-        {
-            throw new DomainException(
-                "Category limit amount cannot be negative.");
-        }
-
         CategoryId = categoryId;
-        LimitAmount = limitAmount;
+
+        ChangeAmount(limitAmount);
     }
 
     internal void ChangeAmount(decimal limitAmount)

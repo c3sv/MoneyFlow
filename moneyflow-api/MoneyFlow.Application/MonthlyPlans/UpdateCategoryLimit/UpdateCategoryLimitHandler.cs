@@ -1,27 +1,23 @@
 ﻿using MoneyFlow.Application.Abstractions.Persistence;
 using MoneyFlow.Application.Common.Exceptions;
-using MoneyFlow.Domain.Common;
 
-namespace MoneyFlow.Application.MonthlyPlans.AddCategoryLimit;
+namespace MoneyFlow.Application.MonthlyPlans.UpdateCategoryLimit;
 
-public sealed class AddCategoryLimitHandler
+public sealed class UpdateCategoryLimitHandler
 {
     private readonly IMonthlyPlanRepository _monthlyPlanRepository;
-    private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AddCategoryLimitHandler(
+    public UpdateCategoryLimitHandler(
         IMonthlyPlanRepository monthlyPlanRepository,
-        ICategoryRepository categoryRepository,
         IUnitOfWork unitOfWork)
     {
         _monthlyPlanRepository = monthlyPlanRepository;
-        _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task HandleAsync(
-        AddCategoryLimitCommand command,
+        UpdateCategoryLimitCommand command,
         CancellationToken cancellationToken = default)
     {
         var monthlyPlan =
@@ -36,26 +32,8 @@ public sealed class AddCategoryLimitHandler
                 $"Monthly plan with id {command.MonthlyPlanId} was not found.");
         }
 
-        var category =
-            await _categoryRepository.GetByIdAsync(
-                command.CategoryId,
-                cancellationToken);
-
-        if (category is null ||
-            category.UserId != command.UserId)
-        {
-            throw new NotFoundException(
-                $"Category with id {command.CategoryId} was not found.");
-        }
-
-        if (category.Type != TransactionType.Expense)
-        {
-            throw new BusinessRuleException(
-                "Only expense categories can have spending limits.");
-        }
-
-        monthlyPlan.AddCategoryLimit(
-            category.Id,
+        monthlyPlan.ChangeCategoryLimit(
+            command.CategoryId,
             command.LimitAmount);
 
         await _unitOfWork.SaveChangesAsync(

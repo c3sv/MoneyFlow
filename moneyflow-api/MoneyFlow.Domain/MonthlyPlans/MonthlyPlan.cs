@@ -4,6 +4,8 @@ namespace MoneyFlow.Domain.MonthlyPlans;
 
 public sealed class MonthlyPlan
 {
+    private const string SupportedCurrency = "PEN";
+
     private readonly List<MonthlyPlanCategoryLimit> _categoryLimits = [];
 
     private MonthlyPlan()
@@ -59,37 +61,40 @@ public sealed class MonthlyPlan
                 "Year must be greater than zero.");
         }
 
-        if (expectedIncome < 0)
-        {
-            throw new DomainException(
-                "Expected income cannot be negative.");
-        }
-
-        if (targetSavings < 0)
-        {
-            throw new DomainException(
-                "Target savings cannot be negative.");
-        }
-
-        if (totalSpendingLimit < 0)
-        {
-            throw new DomainException(
-                "Total spending limit cannot be negative.");
-        }
-
-        if (string.IsNullOrWhiteSpace(currency))
-        {
-            throw new DomainException("Currency is required.");
-        }
-
         UserId = userId;
         Month = month;
         Year = year;
+        Currency = NormalizeCurrency(currency);
+        CreatedAt = createdAt;
+
+        UpdateDetails(
+            expectedIncome,
+            targetSavings,
+            totalSpendingLimit);
+    }
+
+    public void UpdateDetails(
+        decimal expectedIncome,
+        decimal targetSavings,
+        decimal totalSpendingLimit)
+    {
+        ValidateFinancialAmounts(
+            expectedIncome,
+            targetSavings,
+            totalSpendingLimit);
+
+        var allocatedCategoryLimits =
+            _categoryLimits.Sum(limit => limit.LimitAmount);
+
+        if (allocatedCategoryLimits > totalSpendingLimit)
+        {
+            throw new DomainException(
+                "Total spending limit cannot be lower than the sum of category limits.");
+        }
+
         ExpectedIncome = expectedIncome;
         TargetSavings = targetSavings;
         TotalSpendingLimit = totalSpendingLimit;
-        Currency = currency.Trim().ToUpperInvariant();
-        CreatedAt = createdAt;
     }
 
     public void AddCategoryLimit(
@@ -104,6 +109,10 @@ public sealed class MonthlyPlan
             throw new DomainException(
                 "The category already has a limit in this monthly plan.");
         }
+
+        EnsureCategoryLimitFits(
+            currentLimitAmount: 0,
+            newLimitAmount: limitAmount);
 
         var categoryLimit = new MonthlyPlanCategoryLimit(
             categoryId,
@@ -125,6 +134,97 @@ public sealed class MonthlyPlan
                 "The category does not have a limit in this monthly plan.");
         }
 
+        EnsureCategoryLimitFits(
+            categoryLimit.LimitAmount,
+            newLimitAmount);
+
         categoryLimit.ChangeAmount(newLimitAmount);
+    }
+
+    public void RemoveCategoryLimit(long categoryId)
+    {
+        var categoryLimit = _categoryLimits.FirstOrDefault(
+            limit => limit.CategoryId == categoryId);
+
+        if (categoryLimit is null)
+        {
+            throw new DomainException(
+                "The category does not have a limit in this monthly plan.");
+        }
+
+        _categoryLimits.Remove(categoryLimit);
+    }
+
+    private void EnsureCategoryLimitFits(
+        decimal currentLimitAmount,
+        decimal newLimitAmount)
+    {
+        if (newLimitAmount < 0)
+        {
+            throw new DomainException(
+                "Category limit amount cannot be negative.");
+        }
+
+        var allocatedWithoutCurrent =
+            _categoryLimits.Sum(limit => limit.LimitAmount) -
+            currentLimitAmount;
+
+        if (allocatedWithoutCurrent + newLimitAmount >
+            TotalSpendingLimit)
+        {
+            throw new DomainException(
+                "The sum of category limits cannot exceed the total spending limit.");
+        }
+    }
+
+    private static void ValidateFinancialAmounts(
+        decimal expectedIncome,
+        decimal targetSavings,
+        decimal totalSpendingLimit)
+    {
+        if (expectedIncome < 0)
+        {
+            throw new DomainException(
+                "Expected income cannot be negative.");
+        }
+
+        if (targetSavings < 0)
+        {
+            throw new DomainException(
+                "Target savings cannot be negative.");
+        }
+
+        if (totalSpendingLimit < 0)
+        {
+            throw new DomainException(
+                "Total spending limit cannot be negative.");
+        }
+
+        if (targetSavings + totalSpendingLimit >
+            expectedIncome)
+        {
+            throw new DomainException(
+                "Target savings and total spending limit cannot exceed expected income.");
+        }
+    }
+
+    private static string NormalizeCurrency(string currency)
+    {
+        if (string.IsNullOrWhiteSpace(currency))
+        {
+            throw new DomainException(
+                "Currency is required.");
+        }
+
+        var normalizedCurrency =
+            currency.Trim().ToUpperInvariant();
+
+        if (normalizedCurrency != SupportedCurrency)
+        {
+            throw new DomainException(
+                $"Only {SupportedCurrency} currency is supported.");
+        }
+
+        return normalizedCurrency;
     }
 }
