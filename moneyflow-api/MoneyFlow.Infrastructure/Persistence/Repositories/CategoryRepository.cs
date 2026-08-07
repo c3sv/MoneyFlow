@@ -58,4 +58,32 @@ public sealed class CategoryRepository : ICategoryRepository
             .ThenBy(category => category.Name)
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task AddRangeAsync(
+        IEnumerable<Category> categories,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.Categories.AddRangeAsync(
+            categories,
+            cancellationToken);
+    }
+    public Task<bool> ExistsByNameAndTypeExcludingIdAsync(
+        long userId,
+        string name,
+        TransactionType type,
+        long excludedCategoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Categories.AnyAsync(
+            category =>
+                category.UserId == userId &&
+                category.Name == name &&
+                category.Type == type &&
+                category.Id != excludedCategoryId,
+            cancellationToken);
+    }
+    public void Remove(Category category)
+    {
+        _dbContext.Categories.Remove(category);
+    }
 }

@@ -45,4 +45,23 @@ public sealed class MoneyFlowDbContext
 
         base.OnModelCreating(modelBuilder);
     }
+    public async Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction =
+            await Database.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            await operation(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
 }

@@ -59,4 +59,12 @@ public sealed class MonthlyPlanRepository : IMonthlyPlanRepository
             .ThenByDescending(plan => plan.Month)
             .ToListAsync(cancellationToken);
     }
+    public Task<bool> HasCategoryLimitAsync(
+        long categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.MonthlyPlanCategoryLimits.AnyAsync(
+            limit => limit.CategoryId == categoryId,
+            cancellationToken);
+    }
 }

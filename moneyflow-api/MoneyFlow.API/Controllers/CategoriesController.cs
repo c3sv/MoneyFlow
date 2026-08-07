@@ -4,6 +4,8 @@ using MoneyFlow.API.Common.Authentication;
 using MoneyFlow.API.Contracts.Categories;
 using MoneyFlow.Application.Categories.CreateCategory;
 using MoneyFlow.Application.Categories.GetCategories;
+using MoneyFlow.Application.Categories.UpdateCategory;
+using MoneyFlow.Application.Categories.DeleteCategory;
 
 namespace MoneyFlow.API.Controllers;
 
@@ -14,15 +16,20 @@ public sealed class CategoriesController : ControllerBase
 {
     private readonly CreateCategoryHandler _createCategoryHandler;
     private readonly GetCategoriesHandler _getCategoriesHandler;
-
+    private readonly UpdateCategoryHandler _updateCategoryHandler;
+    private readonly DeleteCategoryHandler _deleteCategoryHandler;
+    
     public CategoriesController(
         CreateCategoryHandler createCategoryHandler,
-        GetCategoriesHandler getCategoriesHandler)
+        GetCategoriesHandler getCategoriesHandler,
+        UpdateCategoryHandler updateCategoryHandler,
+        DeleteCategoryHandler deleteCategoryHandler)
     {
         _createCategoryHandler = createCategoryHandler;
         _getCategoriesHandler = getCategoriesHandler;
+        _updateCategoryHandler = updateCategoryHandler;
+        _deleteCategoryHandler = deleteCategoryHandler;
     }
-
     [HttpGet]
     [ProducesResponseType(
         typeof(IReadOnlyList<CategoryResponse>),
@@ -83,5 +90,64 @@ public sealed class CategoriesController : ControllerBase
         return StatusCode(
             StatusCodes.Status201Created,
             response);
+    }
+
+    
+    [HttpPut("{categoryId:long}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Update(
+        long categoryId,
+        [FromBody] UpdateCategoryRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var command = new UpdateCategoryCommand(
+            userId,
+            categoryId,
+            request.Name,
+            request.Icon);
+
+        await _updateCategoryHandler.HandleAsync(
+            command,
+            cancellationToken);
+
+        return NoContent();
+    }
+    
+    [HttpDelete("{categoryId:long}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Delete(
+        long categoryId,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var command = new DeleteCategoryCommand(
+            userId,
+            categoryId);
+
+        await _deleteCategoryHandler.HandleAsync(
+            command,
+            cancellationToken);
+
+        return NoContent();
     }
 }
