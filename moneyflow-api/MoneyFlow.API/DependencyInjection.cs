@@ -29,6 +29,8 @@ using MoneyFlow.Application.MonthlyPlans.DeleteMonthlyPlan;
 using MoneyFlow.Application.MonthlyPlans.GetMonthlyPlanById;
 using MoneyFlow.Application.MonthlyPlans.UpdateCategoryLimit;
 using MoneyFlow.Application.MonthlyPlans.UpdateMonthlyPlan;
+using MoneyFlow.Application.Users.GetCurrentUser;
+using MoneyFlow.Application.Users.UpdateUserProfile;
 
 namespace MoneyFlow.Application;
 
@@ -74,6 +76,9 @@ public static class DependencyInjection
         services.AddScoped<AddCategoryLimitHandler>();
         services.AddScoped<UpdateCategoryLimitHandler>();
         services.AddScoped<DeleteCategoryLimitHandler>();
+        
+        services.AddScoped<GetCurrentUserHandler>();
+        services.AddScoped<UpdateUserProfileHandler>();
         
         return services;
     }

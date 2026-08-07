@@ -8,8 +8,17 @@ public interface IUserRepository
         long userId,
         CancellationToken cancellationToken = default);
 
+    Task<User?> GetByIdAsync(
+        long userId,
+        CancellationToken cancellationToken = default);
+
     Task<User?> GetByEmailAsync(
         string email,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> ExistsByEmailExcludingIdAsync(
+        string email,
+        long excludedUserId,
         CancellationToken cancellationToken = default);
 
     Task AddAsync(

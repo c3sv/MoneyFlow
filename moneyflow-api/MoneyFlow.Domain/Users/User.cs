@@ -1,9 +1,15 @@
-﻿using MoneyFlow.Domain.Common;
+﻿using System.Net.Mail;
+using MoneyFlow.Domain.Common;
 
 namespace MoneyFlow.Domain.Users;
 
 public sealed class User
 {
+    private const int MaxFirstNameLength = 100;
+    private const int MaxLastNameLength = 100;
+    private const int MaxEmailLength = 255;
+    private const int MaxPasswordHashLength = 255;
+
     private User()
     {
     }
@@ -27,30 +33,85 @@ public sealed class User
         string passwordHash,
         DateTimeOffset createdAt)
     {
-        FirstName = ValidateRequired(firstName, "First name");
-        LastName = ValidateRequired(lastName, "Last name");
-        Email = NormalizeEmail(email);
-        PasswordHash = ValidateRequired(passwordHash, "Password hash");
+        PasswordHash = ValidateRequired(
+            passwordHash,
+            "Password hash",
+            MaxPasswordHashLength);
+
         CreatedAt = createdAt;
+
+        UpdateProfile(
+            firstName,
+            lastName,
+            email);
     }
 
-    private static string ValidateRequired(string value, string fieldName)
+    public void UpdateProfile(
+        string firstName,
+        string lastName,
+        string email)
+    {
+        FirstName = ValidateRequired(
+            firstName,
+            "First name",
+            MaxFirstNameLength);
+
+        LastName = ValidateRequired(
+            lastName,
+            "Last name",
+            MaxLastNameLength);
+
+        Email = NormalizeEmail(email);
+    }
+
+    private static string ValidateRequired(
+        string value,
+        string fieldName,
+        int maxLength)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new DomainException($"{fieldName} is required.");
+            throw new DomainException(
+                $"{fieldName} is required.");
         }
 
-        return value.Trim();
+        var normalizedValue = value.Trim();
+
+        if (normalizedValue.Length > maxLength)
+        {
+            throw new DomainException(
+                $"{fieldName} cannot exceed {maxLength} characters.");
+        }
+
+        return normalizedValue;
     }
 
     private static string NormalizeEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            throw new DomainException("Email is required.");
+            throw new DomainException(
+                "Email is required.");
         }
 
-        return email.Trim().ToLowerInvariant();
+        var normalizedEmail =
+            email.Trim().ToLowerInvariant();
+
+        if (normalizedEmail.Length > MaxEmailLength)
+        {
+            throw new DomainException(
+                $"Email cannot exceed {MaxEmailLength} characters.");
+        }
+
+        if (!MailAddress.TryCreate(
+                normalizedEmail,
+                out var parsedEmail) ||
+            parsedEmail.Address != normalizedEmail)
+        {
+            throw new DomainException(
+                "Email format is invalid.");
+        }
+
+        return normalizedEmail;
     }
 }
