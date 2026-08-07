@@ -88,4 +88,39 @@ public sealed class Account
         Balance = newBalance;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void ApplyTransaction(
+        TransactionType transactionType,
+        decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new DomainException(
+                "Transaction amount must be greater than zero.");
+        }
+
+        if (!Enum.IsDefined(transactionType))
+        {
+            throw new DomainException(
+                "Transaction type is invalid.");
+        }
+
+        var newBalance = transactionType switch
+        {
+            TransactionType.Income => Balance + amount,
+            TransactionType.Expense => Balance - amount,
+            _ => throw new DomainException(
+                "Transaction type is invalid.")
+        };
+
+        if (Type != AccountType.Credit && newBalance < 0)
+        {
+            throw new DomainException(
+                "The account does not have enough balance.");
+        }
+
+        Balance = newBalance;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
 }

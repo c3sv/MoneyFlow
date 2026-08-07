@@ -12,6 +12,8 @@ public sealed class Transaction
 
     public long UserId { get; private set; }
 
+    public long AccountId { get; private set; }
+
     public long CategoryId { get; private set; }
 
     public decimal Amount { get; private set; }
@@ -24,6 +26,7 @@ public sealed class Transaction
 
     public Transaction(
         long userId,
+        long accountId,
         long categoryId,
         decimal amount,
         string? description,
@@ -32,28 +35,47 @@ public sealed class Transaction
     {
         if (userId <= 0)
         {
-            throw new DomainException("User id must be greater than zero.");
+            throw new DomainException(
+                "User id must be greater than zero.");
+        }
+
+        if (accountId <= 0)
+        {
+            throw new DomainException(
+                "Account id must be greater than zero.");
         }
 
         if (categoryId <= 0)
         {
-            throw new DomainException("Category id must be greater than zero.");
+            throw new DomainException(
+                "Category id must be greater than zero.");
         }
 
         if (amount <= 0)
         {
-            throw new DomainException("Transaction amount must be greater than zero.");
+            throw new DomainException(
+                "Transaction amount must be greater than zero.");
         }
 
         if (!Enum.IsDefined(type))
         {
-            throw new DomainException("Transaction type is invalid.");
+            throw new DomainException(
+                "Transaction type is invalid.");
+        }
+
+        var normalizedDescription = NormalizeDescription(description);
+
+        if (normalizedDescription?.Length > 500)
+        {
+            throw new DomainException(
+                "Transaction description cannot exceed 500 characters.");
         }
 
         UserId = userId;
+        AccountId = accountId;
         CategoryId = categoryId;
         Amount = amount;
-        Description = NormalizeDescription(description);
+        Description = normalizedDescription;
         Date = date.ToDateTime(TimeOnly.MinValue);
         Type = type;
     }

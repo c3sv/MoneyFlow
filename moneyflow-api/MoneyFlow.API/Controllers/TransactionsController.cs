@@ -42,6 +42,7 @@ public sealed class TransactionsController : ControllerBase
         var response = results
             .Select(transaction => new TransactionResponse(
                 transaction.Id,
+                transaction.AccountId,
                 transaction.CategoryId,
                 transaction.Amount,
                 transaction.Description,
@@ -71,6 +72,7 @@ public sealed class TransactionsController : ControllerBase
 
         var command = new CreateTransactionCommand(
             userId,
+            request.AccountId,
             request.CategoryId,
             request.Amount,
             request.Description,

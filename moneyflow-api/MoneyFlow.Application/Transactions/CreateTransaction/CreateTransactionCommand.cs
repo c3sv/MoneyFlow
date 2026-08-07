@@ -4,6 +4,7 @@ namespace MoneyFlow.Application.Transactions.CreateTransaction;
 
 public sealed record CreateTransactionCommand(
     long UserId,
+    long AccountId,
     long CategoryId,
     decimal Amount,
     string? Description,
