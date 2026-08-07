@@ -14,4 +14,8 @@ public interface ITransactionRepository
     Task<bool> ExistsByCategoryIdAsync(
         long categoryId,
         CancellationToken cancellationToken = default);
+    Task<Transaction?> GetByIdAsync(
+        long transactionId,
+        CancellationToken cancellationToken = default);
+    void Remove(Transaction transaction);
 }

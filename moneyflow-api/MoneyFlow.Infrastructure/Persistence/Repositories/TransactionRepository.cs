@@ -39,4 +39,18 @@ public sealed class TransactionRepository : ITransactionRepository
             transaction => transaction.CategoryId == categoryId,
             cancellationToken);
     }
+    public Task<Transaction?> GetByIdAsync(
+        long transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Transactions
+            .FirstOrDefaultAsync(
+                transaction => transaction.Id == transactionId,
+                cancellationToken);
+    }
+
+    public void Remove(Transaction transaction)
+    {
+        _dbContext.Transactions.Remove(transaction);
+    }
 }
