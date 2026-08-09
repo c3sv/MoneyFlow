@@ -1,10 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { finalize, Observable, of, tap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthStorageService } from '../../core/auth/auth-storage.service';
-import { AuthResponse, LoginRequest, RegisterRequest } from './auth.models';
+import {
+  AuthResponse,
+  LoginRequest,
+  LogoutRequest,
+  RefreshTokenRequest,
+  RegisterRequest,
+} from './auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +33,33 @@ export class AuthService {
       .pipe(tap((response) => this.authStorage.saveSession(response)));
   }
 
-  logout(): void {
-    this.authStorage.clearSession();
+  refreshSession(): Observable<AuthResponse> {
+    const refreshToken = this.authStorage.getRefreshToken();
+
+    if (!refreshToken || this.authStorage.isRefreshTokenExpired()) {
+      return throwError(() => new Error('No hay una sesión disponible para renovar.'));
+    }
+
+    const request: RefreshTokenRequest = { refreshToken };
+    const rememberMe = this.authStorage.isPersistentSession();
+
+    return this.http
+      .post<AuthResponse>(`${this.authUrl}/refresh`, request)
+      .pipe(tap((response) => this.authStorage.saveSession(response, rememberMe)));
+  }
+
+  logout(): Observable<void> {
+    const refreshToken = this.authStorage.getRefreshToken();
+
+    if (!refreshToken) {
+      this.authStorage.clearSession();
+      return of(undefined);
+    }
+
+    const request: LogoutRequest = { refreshToken };
+
+    return this.http
+      .post<void>(`${this.authUrl}/logout`, request)
+      .pipe(finalize(() => this.authStorage.clearSession()));
   }
 }

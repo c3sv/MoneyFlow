@@ -21,11 +21,35 @@ export class AuthStorageService {
   }
 
   getToken(): string | null {
-    return this.getSession()?.token ?? null;
+    return this.getAccessToken();
+  }
+
+  getAccessToken(): string | null {
+    return this.getSession()?.accessToken ?? null;
+  }
+
+  getRefreshToken(): string | null {
+    return this.getSession()?.refreshToken ?? null;
+  }
+
+  isAccessTokenExpired(offsetSeconds = 0): boolean {
+    const expiresAt = this.getSession()?.accessTokenExpiresAt ?? null;
+
+    return this.isExpired(expiresAt, offsetSeconds);
+  }
+
+  isRefreshTokenExpired(): boolean {
+    const expiresAt = this.getSession()?.refreshTokenExpiresAt ?? null;
+
+    return this.isExpired(expiresAt);
+  }
+
+  isPersistentSession(): boolean {
+    return localStorage.getItem(this.storageKey) !== null;
   }
 
   isAuthenticated(): boolean {
-    return Boolean(this.getToken());
+    return Boolean(this.getRefreshToken()) && !this.isRefreshTokenExpired();
   }
 
   clearSession(): void {
@@ -46,5 +70,19 @@ export class AuthStorageService {
       storage.removeItem(this.storageKey);
       return null;
     }
+  }
+
+  private isExpired(expiresAt: string | null, offsetSeconds = 0): boolean {
+    if (!expiresAt) {
+      return true;
+    }
+
+    const expirationTime = Date.parse(expiresAt);
+
+    if (Number.isNaN(expirationTime)) {
+      return true;
+    }
+
+    return expirationTime <= Date.now() + offsetSeconds * 1000;
   }
 }
