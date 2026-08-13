@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 
@@ -27,7 +27,11 @@ const ICON_OPTIONS: readonly IconOption[] = [
   { value: 'wallet-cards', label: 'Sueldo', glyph: '$' },
   { value: 'laptop', label: 'Freelance', glyph: '⌘' },
   { value: 'gift', label: 'Bonos', glyph: '✦' },
-  { value: 'chart-no-axes-combined', label: 'Inversiones', glyph: '↗' },
+  {
+    value: 'chart-no-axes-combined',
+    label: 'Inversiones',
+    glyph: '↗',
+  },
   { value: 'circle-plus', label: 'Otro ingreso', glyph: '+' },
   { value: 'ellipsis', label: 'Otros', glyph: '•••' },
 ];
@@ -42,8 +46,10 @@ const ICON_OPTIONS: readonly IconOption[] = [
 export class CategoriesComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   readonly iconOptions = ICON_OPTIONS;
+
   readonly categoryForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
     type: ['Expense' as CategoryType, Validators.required],
@@ -54,10 +60,12 @@ export class CategoriesComponent implements OnInit {
   selectedFilter: CategoryFilter = 'All';
   editingCategory: Category | null = null;
   categoryPendingDelete: Category | null = null;
+
   isLoading = true;
   isSaving = false;
   isDeleting = false;
   isFormOpen = false;
+
   errorMessage = '';
   successMessage = '';
 
@@ -76,13 +84,15 @@ export class CategoriesComponent implements OnInit {
   }
 
   get expenseCount(): number {
-    return this.categories.filter((category) => category.type === 'Expense')
-      .length;
+    return this.categories.filter(
+      (category) => category.type === 'Expense',
+    ).length;
   }
 
   get incomeCount(): number {
-    return this.categories.filter((category) => category.type === 'Income')
-      .length;
+    return this.categories.filter(
+      (category) => category.type === 'Income',
+    ).length;
   }
 
   loadCategories(): void {
@@ -93,13 +103,16 @@ export class CategoriesComponent implements OnInit {
       next: (categories) => {
         this.categories = categories;
         this.isLoading = false;
+        this.changeDetectorRef.markForCheck();
       },
       error: (error: HttpErrorResponse) => {
         this.errorMessage = this.resolveError(
           error,
           'No pudimos cargar tus categorías. Inténtalo nuevamente.',
         );
+
         this.isLoading = false;
+        this.changeDetectorRef.markForCheck();
       },
     });
   }
@@ -111,23 +124,28 @@ export class CategoriesComponent implements OnInit {
   openCreateForm(): void {
     this.editingCategory = null;
     this.errorMessage = '';
+
     this.categoryForm.controls.type.enable();
+
     this.categoryForm.reset({
       name: '',
       type: 'Expense',
       icon: 'ellipsis',
     });
+
     this.isFormOpen = true;
   }
 
   openEditForm(category: Category): void {
     this.editingCategory = category;
     this.errorMessage = '';
+
     this.categoryForm.reset({
       name: category.name,
       type: category.type,
       icon: category.icon ?? 'ellipsis',
     });
+
     this.categoryForm.controls.type.disable();
     this.isFormOpen = true;
   }
@@ -153,7 +171,10 @@ export class CategoriesComponent implements OnInit {
     const icon = value.icon.trim() || null;
 
     if (!name) {
-      this.categoryForm.controls.name.setErrors({ required: true });
+      this.categoryForm.controls.name.setErrors({
+        required: true,
+      });
+
       return;
     }
 
@@ -161,24 +182,36 @@ export class CategoriesComponent implements OnInit {
     this.errorMessage = '';
 
     const request$: Observable<unknown> = this.editingCategory
-      ? this.categoriesService.update(this.editingCategory.id, { name, icon })
-      : this.categoriesService.create({ name, type: value.type, icon });
+      ? this.categoriesService.update(this.editingCategory.id, {
+          name,
+          icon,
+        })
+      : this.categoriesService.create({
+          name,
+          type: value.type,
+          icon,
+        });
 
     request$.subscribe({
       next: () => {
         this.isSaving = false;
+
         this.successMessage = this.editingCategory
           ? 'Categoría actualizada correctamente.'
           : 'Categoría creada correctamente.';
+
         this.closeForm();
         this.loadCategories();
+        this.changeDetectorRef.markForCheck();
       },
       error: (error: HttpErrorResponse) => {
         this.errorMessage = this.resolveError(
           error,
           'No pudimos guardar la categoría. Revisa los datos e inténtalo nuevamente.',
         );
+
         this.isSaving = false;
+        this.changeDetectorRef.markForCheck();
       },
     });
   }
@@ -200,6 +233,7 @@ export class CategoriesComponent implements OnInit {
     }
 
     const categoryId = this.categoryPendingDelete.id;
+
     this.isDeleting = true;
     this.errorMessage = '';
 
@@ -208,9 +242,12 @@ export class CategoriesComponent implements OnInit {
         this.categories = this.categories.filter(
           (category) => category.id !== categoryId,
         );
+
         this.categoryPendingDelete = null;
         this.isDeleting = false;
         this.successMessage = 'Categoría eliminada correctamente.';
+
+        this.changeDetectorRef.markForCheck();
       },
       error: (error: HttpErrorResponse) => {
         this.errorMessage =
@@ -220,8 +257,11 @@ export class CategoriesComponent implements OnInit {
                 error,
                 'No pudimos eliminar la categoría. Inténtalo nuevamente.',
               );
+
         this.categoryPendingDelete = null;
         this.isDeleting = false;
+
+        this.changeDetectorRef.markForCheck();
       },
     });
   }
@@ -240,8 +280,14 @@ export class CategoriesComponent implements OnInit {
     return category.id;
   }
 
-  private resolveError(error: HttpErrorResponse, fallback: string): string {
+  private resolveError(
+    error: HttpErrorResponse,
+    fallback: string,
+  ): string {
     const detail = error.error?.detail;
-    return typeof detail === 'string' && detail.trim() ? detail : fallback;
+
+    return typeof detail === 'string' && detail.trim()
+      ? detail
+      : fallback;
   }
 }
