@@ -1,0 +1,295 @@
+<section class="categories-page" aria-labelledby="categories-title">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Organización financiera</p>
+      <h1 id="categories-title">Categorías</h1>
+      <p class="page-description">
+        Organiza tus movimientos para entender con claridad de dónde viene y
+        adónde va tu dinero.
+      </p>
+    </div>
+
+    <button class="primary-button" type="button" (click)="openCreateForm()">
+      <span aria-hidden="true">+</span>
+      Nueva categoría
+    </button>
+  </header>
+
+  <div class="summary-grid" aria-label="Resumen de categorías">
+    <article class="summary-card summary-card--total">
+      <span class="summary-card__label">Total</span>
+      <strong>{{ categories.length }}</strong>
+      <span>categorías activas</span>
+    </article>
+    <article class="summary-card summary-card--expense">
+      <span class="summary-card__label">Gastos</span>
+      <strong>{{ expenseCount }}</strong>
+      <span>formas de clasificar egresos</span>
+    </article>
+    <article class="summary-card summary-card--income">
+      <span class="summary-card__label">Ingresos</span>
+      <strong>{{ incomeCount }}</strong>
+      <span>fuentes de entrada</span>
+    </article>
+  </div>
+
+  <div *ngIf="successMessage" class="feedback feedback--success" role="status">
+    <span>{{ successMessage }}</span>
+    <button
+      type="button"
+      aria-label="Cerrar mensaje"
+      (click)="successMessage = ''"
+    >
+      ×
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="feedback feedback--error" role="alert">
+    <span>{{ errorMessage }}</span>
+    <button
+      type="button"
+      aria-label="Cerrar mensaje"
+      (click)="errorMessage = ''"
+    >
+      ×
+    </button>
+  </div>
+
+  <div class="content-card">
+    <div class="content-toolbar">
+      <div class="filter-tabs" role="tablist" aria-label="Filtrar categorías">
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="selectedFilter === 'All'"
+          [class.active]="selectedFilter === 'All'"
+          (click)="selectFilter('All')"
+        >
+          Todas <span>{{ categories.length }}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="selectedFilter === 'Expense'"
+          [class.active]="selectedFilter === 'Expense'"
+          (click)="selectFilter('Expense')"
+        >
+          Gastos <span>{{ expenseCount }}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="selectedFilter === 'Income'"
+          [class.active]="selectedFilter === 'Income'"
+          (click)="selectFilter('Income')"
+        >
+          Ingresos <span>{{ incomeCount }}</span>
+        </button>
+      </div>
+
+      <button
+        class="refresh-button"
+        type="button"
+        [disabled]="isLoading"
+        (click)="loadCategories()"
+      >
+        <span aria-hidden="true">↻</span>
+        Actualizar
+      </button>
+    </div>
+
+    <div
+      *ngIf="isLoading"
+      class="category-grid"
+      aria-label="Cargando categorías"
+    >
+      <div
+        class="category-skeleton"
+        *ngFor="let item of [1, 2, 3, 4, 5, 6]"
+      ></div>
+    </div>
+
+    <div *ngIf="!isLoading && filteredCategories.length" class="category-grid">
+      <article
+        class="category-card"
+        *ngFor="let category of filteredCategories; trackBy: trackByCategoryId"
+      >
+        <div
+          class="category-icon"
+          [class.category-icon--income]="category.type === 'Income'"
+          aria-hidden="true"
+        >
+          {{ iconGlyph(category.icon) }}
+        </div>
+
+        <div class="category-card__body">
+          <h2>{{ category.name }}</h2>
+          <span
+            class="type-badge"
+            [class.type-badge--income]="category.type === 'Income'"
+          >
+            {{ typeLabel(category.type) }}
+          </span>
+        </div>
+
+        <div class="category-actions">
+          <button
+            type="button"
+            aria-label="Editar categoría"
+            (click)="openEditForm(category)"
+          >
+            Editar
+          </button>
+          <button
+            class="delete-action"
+            type="button"
+            aria-label="Eliminar categoría"
+            (click)="requestDelete(category)"
+          >
+            Eliminar
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <div *ngIf="!isLoading && !filteredCategories.length" class="empty-state">
+      <div aria-hidden="true">◎</div>
+      <h2>No hay categorías en esta vista</h2>
+      <p>Crea una categoría nueva o cambia el filtro seleccionado.</p>
+      <button class="secondary-button" type="button" (click)="openCreateForm()">
+        Crear categoría
+      </button>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="isFormOpen" class="modal-backdrop">
+  <section
+    class="modal-card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="category-form-title"
+  >
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">
+          {{ editingCategory ? "Editar detalle" : "Nueva clasificación" }}
+        </p>
+        <h2 id="category-form-title">
+          {{ editingCategory ? "Editar categoría" : "Crear categoría" }}
+        </h2>
+      </div>
+      <button
+        class="close-button"
+        type="button"
+        aria-label="Cerrar formulario"
+        (click)="closeForm()"
+      >
+        ×
+      </button>
+    </header>
+
+    <form [formGroup]="categoryForm" (ngSubmit)="submitCategory()">
+      <label class="form-field">
+        <span>Nombre</span>
+        <input
+          type="text"
+          formControlName="name"
+          maxlength="100"
+          autocomplete="off"
+          placeholder="Ej. Mascotas"
+        />
+        <small
+          *ngIf="
+            categoryForm.controls.name.touched &&
+            categoryForm.controls.name.hasError('required')
+          "
+        >
+          El nombre es obligatorio.
+        </small>
+      </label>
+
+      <fieldset class="type-selector" [disabled]="editingCategory !== null">
+        <legend>Tipo</legend>
+        <label
+          [class.selected]="categoryForm.controls.type.value === 'Expense'"
+        >
+          <input type="radio" formControlName="type" value="Expense" />
+          <span class="type-dot type-dot--expense"></span>
+          Gasto
+        </label>
+        <label [class.selected]="categoryForm.controls.type.value === 'Income'">
+          <input type="radio" formControlName="type" value="Income" />
+          <span class="type-dot type-dot--income"></span>
+          Ingreso
+        </label>
+      </fieldset>
+      <p *ngIf="editingCategory" class="field-hint">
+        El tipo no puede cambiarse después de crear la categoría.
+      </p>
+
+      <label class="form-field">
+        <span>Icono</span>
+        <select formControlName="icon">
+          <option *ngFor="let option of iconOptions" [value]="option.value">
+            {{ option.glyph }} · {{ option.label }}
+          </option>
+        </select>
+      </label>
+
+      <footer class="modal-actions">
+        <button
+          class="secondary-button"
+          type="button"
+          [disabled]="isSaving"
+          (click)="closeForm()"
+        >
+          Cancelar
+        </button>
+        <button class="primary-button" type="submit" [disabled]="isSaving">
+          {{
+            isSaving
+              ? "Guardando…"
+              : editingCategory
+                ? "Guardar cambios"
+                : "Crear categoría"
+          }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<div *ngIf="categoryPendingDelete" class="modal-backdrop">
+  <section
+    class="confirm-card"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-title"
+  >
+    <div class="confirm-icon" aria-hidden="true">!</div>
+    <h2 id="delete-title">Eliminar categoría</h2>
+    <p>
+      ¿Deseas eliminar <strong>{{ categoryPendingDelete.name }}</strong
+      >? Esta acción no se puede deshacer.
+    </p>
+    <div class="modal-actions">
+      <button
+        class="secondary-button"
+        type="button"
+        [disabled]="isDeleting"
+        (click)="cancelDelete()"
+      >
+        Cancelar
+      </button>
+      <button
+        class="danger-button"
+        type="button"
+        [disabled]="isDeleting"
+        (click)="confirmDelete()"
+      >
+        {{ isDeleting ? "Eliminando…" : "Sí, eliminar" }}
+      </button>
+    </div>
+  </section>
+</div>

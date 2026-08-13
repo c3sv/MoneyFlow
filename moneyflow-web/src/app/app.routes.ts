@@ -57,9 +57,16 @@ export const routes: Routes = [
         title: 'Transactions | MoneyFlow',
         loadComponent: () =>
           import('./features/transactions/pages/transactions/transactions.component').then(
-            (component)=> component.TransactionsComponent,
-          )
-
+            (component) => component.TransactionsComponent,
+          ),
+      },
+      {
+        path: 'categories',
+        title: 'Categorías | MoneyFlow',
+        loadComponent: () =>
+          import('./features/categories/pages/categories/categories.component').then(
+            (component) => component.CategoriesComponent,
+          ),
       },
       { path: '', pathMatch: 'full', redirectTo: 'summary' },
     ],
