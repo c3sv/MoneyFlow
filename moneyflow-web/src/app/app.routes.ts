@@ -68,7 +68,19 @@ export const routes: Routes = [
             (component) => component.CategoriesComponent,
           ),
       },
-      { path: '', pathMatch: 'full', redirectTo: 'summary' },
+      {
+        path: 'goals',
+        title: 'Metas de ahorro | MoneyFlow',
+        loadComponent: () =>
+          import('./features/savings-goals/pages/saving-goals/savings-goals.component').then(
+            (component) => component.SavingsGoalsComponent,
+          ),
+      },
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'summary',
+      },
     ],
   },
   {

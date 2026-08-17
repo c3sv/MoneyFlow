@@ -1,0 +1,565 @@
+<section class="savings-goals">
+  <header class="goals-header">
+    <div>
+      <h1 class="page-title">
+        Metas de ahorro
+      </h1>
+
+      <p class="page-subtitle">
+        Define objetivos y registra tu progreso.
+      </p>
+    </div>
+
+    <button
+      class="btn btn--primary"
+      type="button"
+      (click)="openCreateForm()"
+    >
+      <span aria-hidden="true">+</span>
+      Nueva meta
+    </button>
+  </header>
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert--success"
+    role="status"
+  >
+    {{ successMessage }}
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="alert alert--error"
+    role="alert"
+  >
+    <span>{{ errorMessage }}</span>
+
+    <button
+      *ngIf="
+        !loading &&
+        savingsGoals.length === 0
+      "
+      class="alert__action"
+      type="button"
+      (click)="loadSavingsGoals()"
+    >
+      Reintentar
+    </button>
+  </div>
+
+  <div
+    *ngIf="loading"
+    class="goals-state"
+    aria-live="polite"
+  >
+    <span
+      class="spinner"
+      aria-hidden="true"
+    ></span>
+
+    <p>Cargando metas de ahorro...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div
+      *ngIf="savingsGoals.length > 0"
+      class="goals-summary"
+    >
+      <div class="summary-item">
+        <span class="summary-item__label">
+          Objetivo total
+        </span>
+
+        <strong class="figures">
+          {{ formatCurrency(totalTargetAmount) }}
+        </strong>
+      </div>
+
+      <div
+        class="summary-divider"
+        aria-hidden="true"
+      ></div>
+
+      <div class="summary-item">
+        <span class="summary-item__label">
+          Total ahorrado
+        </span>
+
+        <strong
+          class="summary-item__value--positive figures"
+        >
+          {{ formatCurrency(totalCurrentAmount) }}
+        </strong>
+      </div>
+
+      <div
+        class="summary-divider"
+        aria-hidden="true"
+      ></div>
+
+      <div class="summary-item">
+        <span class="summary-item__label">
+          Metas completadas
+        </span>
+
+        <strong>
+          {{ completedGoalsCount }} de
+          {{ savingsGoals.length }}
+        </strong>
+      </div>
+    </div>
+
+    <div
+      *ngIf="
+        savingsGoals.length === 0 &&
+        !errorMessage
+      "
+      class="goals-empty"
+    >
+      <div
+        class="goals-empty__icon"
+        aria-hidden="true"
+      >
+        ◎
+      </div>
+
+      <h2>Crea tu primera meta</h2>
+
+      <p>
+        Empieza a ahorrar para una compra,
+        un viaje o tu fondo de emergencia.
+      </p>
+
+      <button
+        class="btn btn--primary"
+        type="button"
+        (click)="openCreateForm()"
+      >
+        Crear primera meta
+      </button>
+    </div>
+
+    <div
+      *ngIf="savingsGoals.length > 0"
+      class="goals-grid"
+    >
+      <article
+        *ngFor="
+          let goal of savingsGoals;
+          trackBy: trackBySavingsGoalId
+        "
+        class="goal-card"
+        [class.goal-card--completed]="
+          isCompleted(goal)
+        "
+      >
+        <header class="goal-card__header">
+          <div>
+            <span
+              class="goal-card__status"
+              [class.goal-card__status--completed]="
+                isCompleted(goal)
+              "
+            >
+              {{
+                isCompleted(goal)
+                  ? 'Completada'
+                  : 'En progreso'
+              }}
+            </span>
+
+            <h2>{{ goal.title }}</h2>
+          </div>
+
+          <strong class="goal-card__percent">
+            {{ progressPercent(goal) }}%
+          </strong>
+        </header>
+
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="Progreso de la meta"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="
+            progressPercent(goal)
+          "
+        >
+          <div
+            class="progress-track__fill"
+            [style.width.%]="
+              progressPercent(goal)
+            "
+          ></div>
+        </div>
+
+        <div class="goal-card__amounts">
+          <div>
+            <span>Ahorrado</span>
+
+            <strong class="figures">
+              {{
+                formatCurrency(
+                  goal.currentAmount
+                )
+              }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Objetivo</span>
+
+            <strong class="figures">
+              {{
+                formatCurrency(
+                  goal.targetAmount
+                )
+              }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="goal-card__meta">
+          <span>
+            Faltan
+            <strong class="figures">
+              {{
+                formatCurrency(
+                  remainingAmount(goal)
+                )
+              }}
+            </strong>
+          </span>
+
+          <span>
+            {{ formatDeadline(goal.deadline) }}
+          </span>
+        </div>
+
+        <footer class="goal-card__actions">
+          <button
+            *ngIf="!isCompleted(goal)"
+            class="btn btn--progress"
+            type="button"
+            (click)="openProgressForm(goal)"
+          >
+            Agregar progreso
+          </button>
+
+          <button
+            class="text-action"
+            type="button"
+            (click)="openEditForm(goal)"
+          >
+            Editar
+          </button>
+
+          <button
+            class="text-action text-action--danger"
+            type="button"
+            (click)="requestDelete(goal)"
+          >
+            Eliminar
+          </button>
+        </footer>
+      </article>
+
+      <button
+        class="goal-card goal-card--add"
+        type="button"
+        (click)="openCreateForm()"
+      >
+        <span aria-hidden="true">+</span>
+        Crear otra meta
+      </button>
+    </div>
+  </ng-container>
+</section>
+
+<div
+  *ngIf="isGoalFormOpen"
+  class="modal-backdrop"
+>
+  <section
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="goal-form-title"
+  >
+    <header class="modal__header">
+      <div>
+        <h2 id="goal-form-title">
+          {{
+            isEditing
+              ? 'Editar meta'
+              : 'Nueva meta'
+          }}
+        </h2>
+
+        <p>
+          Define el objetivo que deseas alcanzar.
+        </p>
+      </div>
+
+      <button
+        class="modal__close"
+        type="button"
+        aria-label="Cerrar"
+        [disabled]="isSaving"
+        (click)="closeGoalForm()"
+      >
+        ×
+      </button>
+    </header>
+
+    <form
+      class="goal-form"
+      [formGroup]="goalForm"
+      (ngSubmit)="submitGoal()"
+    >
+      <label class="form-field form-field--full">
+        <span>Nombre de la meta</span>
+
+        <input
+          type="text"
+          formControlName="title"
+          maxlength="200"
+          placeholder="Ej. Fondo de emergencia"
+        />
+
+        <small
+          *ngIf="
+            goalForm.controls.title.touched &&
+            goalForm.controls.title.invalid
+          "
+        >
+          Ingresa un nombre para la meta.
+        </small>
+      </label>
+
+      <label class="form-field">
+        <span>Monto objetivo</span>
+
+        <input
+          type="number"
+          formControlName="targetAmount"
+          min="0.01"
+          step="0.01"
+        />
+
+        <small
+          *ngIf="
+            goalForm.controls.targetAmount.touched &&
+            goalForm.controls.targetAmount.invalid
+          "
+        >
+          Ingresa un monto mayor que cero.
+        </small>
+      </label>
+
+      <label class="form-field">
+        <span>Fecha límite opcional</span>
+
+        <input
+          type="date"
+          formControlName="deadline"
+          [attr.min]="
+            isEditing
+              ? null
+              : minimumDeadline
+          "
+        />
+      </label>
+
+      <div
+        *ngIf="errorMessage"
+        class="alert alert--error form-field--full"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <footer class="modal__actions">
+        <button
+          class="btn btn--secondary"
+          type="button"
+          [disabled]="isSaving"
+          (click)="closeGoalForm()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="btn btn--primary"
+          type="submit"
+          [disabled]="isSaving"
+        >
+          {{
+            isSaving
+              ? 'Guardando...'
+              : isEditing
+                ? 'Actualizar meta'
+                : 'Crear meta'
+          }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<div
+  *ngIf="isProgressFormOpen && progressGoal"
+  class="modal-backdrop"
+>
+  <section
+    class="modal modal--small"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="progress-form-title"
+  >
+    <header class="modal__header">
+      <div>
+        <h2 id="progress-form-title">
+          Agregar progreso
+        </h2>
+
+        <p>{{ progressGoal.title }}</p>
+      </div>
+
+      <button
+        class="modal__close"
+        type="button"
+        aria-label="Cerrar"
+        [disabled]="isAddingProgress"
+        (click)="closeProgressForm()"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="progress-remaining">
+      <span>Monto restante</span>
+
+      <strong class="figures">
+        {{
+          formatCurrency(
+            remainingAmount(progressGoal)
+          )
+        }}
+      </strong>
+    </div>
+
+    <form
+      class="progress-form"
+      [formGroup]="progressForm"
+      (ngSubmit)="submitProgress()"
+    >
+      <label class="form-field">
+        <span>Monto que deseas agregar</span>
+
+        <input
+          type="number"
+          formControlName="amount"
+          min="0.01"
+          step="0.01"
+        />
+
+        <small
+          *ngIf="
+            progressForm.controls.amount.touched &&
+            progressForm.controls.amount.invalid
+          "
+        >
+          Ingresa un monto válido que no supere
+          el restante.
+        </small>
+      </label>
+
+      <div
+        *ngIf="errorMessage"
+        class="alert alert--error"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <footer class="modal__actions">
+        <button
+          class="btn btn--secondary"
+          type="button"
+          [disabled]="isAddingProgress"
+          (click)="closeProgressForm()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="btn btn--primary"
+          type="submit"
+          [disabled]="isAddingProgress"
+        >
+          {{
+            isAddingProgress
+              ? 'Agregando...'
+              : 'Agregar progreso'
+          }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<div
+  *ngIf="goalPendingDelete"
+  class="modal-backdrop"
+>
+  <section
+    class="modal modal--small"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-goal-title"
+  >
+    <header class="modal__header">
+      <div>
+        <h2 id="delete-goal-title">
+          Eliminar meta
+        </h2>
+
+        <p>
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+    </header>
+
+    <p class="delete-message">
+      ¿Deseas eliminar
+      <strong>
+        {{ goalPendingDelete.title }}
+      </strong>?
+    </p>
+
+    <footer class="modal__actions">
+      <button
+        class="btn btn--secondary"
+        type="button"
+        [disabled]="isDeleting"
+        (click)="cancelDelete()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        class="btn btn--danger"
+        type="button"
+        [disabled]="isDeleting"
+        (click)="confirmDelete()"
+      >
+        {{
+          isDeleting
+            ? 'Eliminando...'
+            : 'Eliminar meta'
+        }}
+      </button>
+    </footer>
+  </section>
+</div>
