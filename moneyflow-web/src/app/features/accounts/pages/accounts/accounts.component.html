@@ -1,80 +1,504 @@
-<div *ngIf="loading">Cargando cuentas...</div>
-<div *ngIf="!loading" class="accounts">
-    <div class="accounts">
-      <header class="accounts__header">
-        <div>
-          <h1 class="page-title">Tus cuentas</h1>
-          <p class="page-subtitle">{{ accounts.length }} cuentas conectadas</p>
-        </div>
-        <button class="btn btn--primary" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Agregar cuenta
-        </button>
-      </header>
+<section class="accounts">
+  <header class="accounts__header">
+    <div>
+      <h1 class="page-title">Tus cuentas</h1>
 
-      <!-- Resumen de patrimonio -->
-      <div class="net-worth-strip">
-        <div class="net-worth-strip__item">
-          <span class="net-worth-strip__label">Patrimonio neto</span>
-          <span class="net-worth-strip__value figures">{{ formatCurrency(netWorth) }}</span>
-        </div>
-        <div class="net-worth-strip__divider" aria-hidden="true"></div>
-        <div class="net-worth-strip__item">
-          <span class="net-worth-strip__label">Activos</span>
-          <span class="net-worth-strip__value figures net-worth-strip__value--positive">{{ formatCurrency(totalAssets) }}</span>
-        </div>
-        <div class="net-worth-strip__divider" aria-hidden="true"></div>
-        <div class="net-worth-strip__item">
-          <span class="net-worth-strip__label">Deudas</span>
-          <span class="net-worth-strip__value figures net-worth-strip__value--negative">{{ formatCurrency(totalDebt) }}</span>
-        </div>
+      <p class="page-subtitle">
+        Administra las cuentas que utilizas en MoneyFlow.
+      </p>
+    </div>
+
+    <button
+      class="btn btn--primary"
+      type="button"
+      (click)="openCreateForm()"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <line
+          x1="12"
+          y1="5"
+          x2="12"
+          y2="19"
+        ></line>
+
+        <line
+          x1="5"
+          y1="12"
+          x2="19"
+          y2="12"
+        ></line>
+      </svg>
+
+      Agregar cuenta
+    </button>
+  </header>
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert--success"
+    role="status"
+  >
+    {{ successMessage }}
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="alert alert--error"
+    role="alert"
+  >
+    <span>{{ errorMessage }}</span>
+
+    <button
+      *ngIf="!loading && accounts.length === 0"
+      class="alert__action"
+      type="button"
+      (click)="loadAccounts()"
+    >
+      Reintentar
+    </button>
+  </div>
+
+  <div
+    *ngIf="loading"
+    class="accounts-state"
+    aria-live="polite"
+  >
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Cargando cuentas...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div
+      *ngIf="accounts.length > 0"
+      class="net-worth-strip"
+    >
+      <div class="net-worth-strip__item">
+        <span class="net-worth-strip__label">
+          Patrimonio neto
+        </span>
+
+        <span class="net-worth-strip__value figures">
+          {{ formatCurrency(netWorth) }}
+        </span>
       </div>
 
-      <!-- Tarjetas de cuentas -->
-      <div class="account-grid">
-        <article class="account-card" *ngFor="let acc of accounts" [attr.data-type]="acc.type">
-          <div class="account-card__top">
-            <span class="account-card__bank-badge">{{ acc.bank }}</span>
-            <span class="account-card__type">{{ typeLabel(acc.type) }}</span>
-          </div>
+      <div
+        class="net-worth-strip__divider"
+        aria-hidden="true"
+      ></div>
 
-          <div class="account-card__body">
-            <span class="account-card__nickname">{{ acc.nickname }}</span>
-            <span class="account-card__number">•••• {{ acc.last4 }}</span>
-            <span class="account-card__balance figures" [class.account-card__balance--negative]="acc.balance < 0">
-          {{ formatCurrency(acc.balance, acc.currency) }}
+      <div class="net-worth-strip__item">
+        <span class="net-worth-strip__label">
+          Activos
         </span>
-          </div>
 
-          <div class="account-card__footer">
-        <span class="account-card__synced">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="1 4 1 10 7 10"></polyline>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-          </svg>
-          Sincronizado {{ acc.lastSynced }}
+        <span
+          class="net-worth-strip__value net-worth-strip__value--positive figures"
+        >
+          {{ formatCurrency(totalAssets) }}
         </span>
-            <button class="account-card__menu" type="button" aria-label="Más opciones">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="1"></circle>
-                <circle cx="19" cy="12" r="1"></circle>
-                <circle cx="5" cy="12" r="1"></circle>
-              </svg>
-            </button>
-          </div>
-        </article>
+      </div>
 
-        <!-- Tarjeta para conectar una nueva cuenta -->
-        <button class="account-card account-card--add" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Conectar una cuenta
-        </button>
+      <div
+        class="net-worth-strip__divider"
+        aria-hidden="true"
+      ></div>
+
+      <div class="net-worth-strip__item">
+        <span class="net-worth-strip__label">
+          Deudas
+        </span>
+
+        <span
+          class="net-worth-strip__value net-worth-strip__value--negative figures"
+        >
+          {{ formatCurrency(totalDebt) }}
+        </span>
       </div>
     </div>
+
+    <div
+      *ngIf="accounts.length === 0 && !errorMessage"
+      class="accounts-empty"
+    >
+      <div
+        class="accounts-empty__icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect
+            x="2"
+            y="5"
+            width="20"
+            height="14"
+            rx="2"
+          ></rect>
+
+          <line
+            x1="2"
+            y1="10"
+            x2="22"
+            y2="10"
+          ></line>
+        </svg>
+      </div>
+
+      <h2>Aún no tienes cuentas</h2>
+
+      <p>
+        Agrega tu primera cuenta para registrar
+        ingresos y gastos.
+      </p>
+
+      <button
+        class="btn btn--primary"
+        type="button"
+        (click)="openCreateForm()"
+      >
+        Agregar primera cuenta
+      </button>
+    </div>
+
+    <div
+      *ngIf="accounts.length > 0"
+      class="account-grid"
+    >
+      <article
+        *ngFor="
+          let account of accounts;
+          trackBy: trackByAccountId
+        "
+        class="account-card"
+        [attr.data-type]="account.type"
+      >
+        <div class="account-card__top">
+          <span class="account-card__bank-badge">
+            {{ account.bank }}
+          </span>
+
+          <span class="account-card__type">
+            {{ typeLabel(account.type) }}
+          </span>
+        </div>
+
+        <div class="account-card__body">
+          <span class="account-card__nickname">
+            {{ account.nickname }}
+          </span>
+
+          <span class="account-card__number">
+            •••• {{ account.last4 }}
+          </span>
+
+          <span
+            class="account-card__balance figures"
+            [class.account-card__balance--negative]="
+              account.balance < 0
+            "
+          >
+            {{ formatCurrency(account.balance) }}
+          </span>
+        </div>
+
+        <div class="account-card__footer">
+          <span class="account-card__updated">
+            Actualizada
+            {{ formatUpdatedAt(account.updatedAt) }}
+          </span>
+
+          <div class="account-card__actions">
+            <button
+              class="account-card__action"
+              type="button"
+              aria-label="Editar cuenta"
+              (click)="openEditForm(account)"
+            >
+              Editar
+            </button>
+
+            <button
+              class="account-card__action account-card__action--danger"
+              type="button"
+              aria-label="Eliminar cuenta"
+              (click)="requestDelete(account)"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <button
+        class="account-card account-card--add"
+        type="button"
+        (click)="openCreateForm()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line
+            x1="12"
+            y1="5"
+            x2="12"
+            y2="19"
+          ></line>
+
+          <line
+            x1="5"
+            y1="12"
+            x2="19"
+            y2="12"
+          ></line>
+        </svg>
+
+        Agregar otra cuenta
+      </button>
+    </div>
+  </ng-container>
+</section>
+
+<div
+  *ngIf="isFormOpen"
+  class="modal-backdrop"
+  role="presentation"
+>
+  <section
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="account-form-title"
+  >
+    <header class="modal__header">
+      <div>
+        <h2 id="account-form-title">
+          {{ isEditing ? 'Editar cuenta' : 'Agregar cuenta' }}
+        </h2>
+
+        <p>
+          {{
+            isEditing
+              ? 'Actualiza los datos de la cuenta.'
+              : 'Registra una cuenta para comenzar a controlar tus movimientos.'
+          }}
+        </p>
+      </div>
+
+      <button
+        class="modal__close"
+        type="button"
+        aria-label="Cerrar formulario"
+        [disabled]="isSaving"
+        (click)="closeForm()"
+      >
+        ×
+      </button>
+    </header>
+
+    <form
+      class="account-form"
+      [formGroup]="accountForm"
+      (ngSubmit)="submitAccount()"
+    >
+      <label class="form-field">
+        <span>Banco o entidad</span>
+
+        <input
+          type="text"
+          formControlName="bank"
+          maxlength="100"
+          placeholder="Ej. BCP"
+        />
+
+        <small
+          *ngIf="
+            accountForm.controls.bank.touched &&
+            accountForm.controls.bank.invalid
+          "
+        >
+          Ingresa el nombre del banco.
+        </small>
+      </label>
+
+      <label class="form-field">
+        <span>Nombre de la cuenta</span>
+
+        <input
+          type="text"
+          formControlName="nickname"
+          maxlength="100"
+          placeholder="Ej. Cuenta principal"
+        />
+
+        <small
+          *ngIf="
+            accountForm.controls.nickname.touched &&
+            accountForm.controls.nickname.invalid
+          "
+        >
+          Ingresa un nombre para identificar la cuenta.
+        </small>
+      </label>
+
+      <label class="form-field">
+        <span>Tipo de cuenta</span>
+
+        <select formControlName="type">
+          <option
+            *ngFor="let option of accountTypeOptions"
+            [ngValue]="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>Últimos cuatro dígitos</span>
+
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="4"
+          formControlName="last4"
+          placeholder="1234"
+        />
+
+        <small
+          *ngIf="
+            accountForm.controls.last4.touched &&
+            accountForm.controls.last4.invalid
+          "
+        >
+          Ingresa exactamente cuatro números.
+        </small>
+      </label>
+
+      <label
+        *ngIf="!isEditing"
+        class="form-field"
+      >
+        <span>Saldo inicial</span>
+
+        <input
+          type="number"
+          step="0.01"
+          formControlName="initialBalance"
+        />
+
+        <small>
+          La moneda utilizada actualmente es PEN.
+        </small>
+      </label>
+
+      <div
+        *ngIf="errorMessage"
+        class="alert alert--error"
+        role="alert"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <footer class="modal__actions">
+        <button
+          class="btn btn--secondary"
+          type="button"
+          [disabled]="isSaving"
+          (click)="closeForm()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="btn btn--primary"
+          type="submit"
+          [disabled]="isSaving"
+        >
+          {{
+            isSaving
+              ? 'Guardando...'
+              : isEditing
+                ? 'Actualizar cuenta'
+                : 'Crear cuenta'
+          }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<div
+  *ngIf="accountPendingDelete"
+  class="modal-backdrop"
+  role="presentation"
+>
+  <section
+    class="modal modal--small"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-account-title"
+  >
+    <header class="modal__header">
+      <div>
+        <h2 id="delete-account-title">
+          Eliminar cuenta
+        </h2>
+
+        <p>
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+    </header>
+
+    <p class="delete-message">
+      ¿Deseas eliminar la cuenta
+      <strong>
+        {{ accountPendingDelete.nickname }}
+      </strong>?
+    </p>
+
+    <footer class="modal__actions">
+      <button
+        class="btn btn--secondary"
+        type="button"
+        [disabled]="isDeleting"
+        (click)="cancelDelete()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        class="btn btn--danger"
+        type="button"
+        [disabled]="isDeleting"
+        (click)="confirmDelete()"
+      >
+        {{
+          isDeleting
+            ? 'Eliminando...'
+            : 'Eliminar cuenta'
+        }}
+      </button>
+    </footer>
+  </section>
 </div>

@@ -56,14 +56,14 @@ describe('TransactionsComponent', () => {
 
   const accounts: Account[] = [
     {
-      id: '10',
+      id: 10,
       bank: 'BCP',
       nickname: 'Cuenta principal',
-      type: 'checking',
+      type: 'Checking',
       last4: '1234',
       balance: 5000,
       currency: 'PEN',
-      lastSynced: 'ahora',
+      updatedAt: '2026-08-16T20:00:00Z',
     },
   ];
 
